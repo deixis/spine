@@ -1,0 +1,7 @@
+syntax = "proto3";
+package natspb;
+
+message Message {
+  bytes payload = 1;
+  bytes transit = 2;
+}

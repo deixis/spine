@@ -1,0 +1,21 @@
+node = "node.test"
+version = "test"
+
+[request]
+  timeout_ms = 500
+
+[log]
+  level = "trace"
+  formatter = "logf"
+  printer = "stdout"
+
+[schedule.local]
+  db = "schedule-cust.db"
+  workers = 4
+
+[schedule.local.encryption]
+  default = 0
+  keys = ["7sYSoIRC5mWCbOsBZDuaqjHoLI8trIi1TTMXRwqCs5fWtzXDd/R0QhssAIgWVKzKT4wwCLwxoD7VDb1Vs/mxmQ=="]
+
+[app]
+  foo = "bar"

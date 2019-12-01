@@ -1,0 +1,12 @@
+node = "$NODE_NAME"
+version = "test"
+
+[request]
+  timeout_ms = 500
+
+[disco.consul]
+  advertise_address = "api.loop"
+  address = "localhost:8500"
+
+[app]
+  foo = "bar"

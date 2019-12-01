@@ -1,0 +1,43 @@
+module github.com/deixis/spine
+
+go 1.13
+
+require (
+	github.com/armon/go-metrics v0.3.0
+	github.com/boltdb/bolt v1.3.1
+	github.com/fatih/color v1.7.0
+	github.com/gogo/protobuf v1.3.1
+	github.com/golang/protobuf v1.3.2
+	github.com/google/uuid v1.1.1
+	github.com/gorilla/mux v1.7.3
+	github.com/hashicorp/consul v1.6.1
+	github.com/hashicorp/consul/api v1.2.0
+	github.com/hashicorp/go-cleanhttp v0.5.1
+	github.com/hashicorp/go-immutable-radix v1.1.0
+	github.com/hashicorp/go-rootcerts v1.0.1
+	github.com/hashicorp/golang-lru v0.5.3
+	github.com/hashicorp/serf v0.8.5
+	github.com/mattn/go-colorable v0.0.9
+	github.com/mattn/go-isatty v0.0.10
+	github.com/mitchellh/go-homedir v1.1.0
+	github.com/mitchellh/mapstructure v1.1.2
+	github.com/nats-io/jwt v0.3.0
+	github.com/nats-io/nats.go v1.9.1
+	github.com/nats-io/nkeys v0.1.2
+	github.com/nats-io/nuid v1.0.1
+	github.com/nats-io/stan.go v0.5.0
+	github.com/opentracing/opentracing-go v1.1.0
+	github.com/pelletier/go-toml v1.6.0
+	github.com/pkg/errors v0.8.1
+	github.com/uber/jaeger-client-go v2.20.1+incompatible
+	github.com/uber/jaeger-lib v2.2.0+incompatible
+	go.uber.org/atomic v1.5.0
+	golang.org/x/crypto v0.0.0-20191108234033-bd318be0434a
+	golang.org/x/lint v0.0.0-20190930215403-16217165b5de
+	golang.org/x/net v0.0.0-20191109021931-daa7c04131f5
+	golang.org/x/sys v0.0.0-20191110163157-d32e6e3b99c4
+	golang.org/x/text v0.3.2
+	golang.org/x/tools v0.0.0-20191109212701-97ad0ed33101
+	google.golang.org/genproto v0.0.0-20191108220845-16a3f7862a1a
+	google.golang.org/grpc v1.25.1
+)

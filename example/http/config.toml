@@ -1,0 +1,8 @@
+node = "node.test"
+version = "test"
+
+[request]
+  timeout_ms = 500
+
+[app]
+  foo = "bar"

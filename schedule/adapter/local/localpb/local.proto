@@ -1,0 +1,46 @@
+syntax = "proto3";
+package local;
+
+// A Partition stores event keys within a specific time range
+message Partition {
+  int64 from = 1;
+  int64 to = 2;
+  repeated string keys = 3;
+}
+
+// Checkpoint stores a time range. It is used to store the last load performed
+// as a checkpoint to resume processing where it was left off.
+message Checkpoint {
+  uint64 seq = 1;
+  int64 from = 2;
+  int64 to = 3;
+}
+
+// A Job is a one-time task definition
+message Job {
+	string id = 1;
+  string target = 2;
+  int64 due = 3;
+  bytes data = 4;
+
+  JobOptions options = 14;
+  // Interval interval = 15;
+}
+
+// JobOptions contains job execution options
+message JobOptions {
+  uint32 retryLimit = 1;
+  int64 minBackOff = 2;
+  int64 maxBackOff = 3;
+  int64 ageLimit = 4;
+}
+
+// An Event is an occurence of a job executed at a specific time.
+// There is one event per job execution.
+message Event {
+  string id = 1;
+  int64 due = 2;
+  uint32 attempt = 3;
+
+  Job job = 15;
+}

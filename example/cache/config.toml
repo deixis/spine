@@ -1,0 +1,10 @@
+node = "$NODE_NAME"
+version = "test"
+
+[request]
+  timeout_ms = 500
+
+[cache.local]
+
+[app]
+  foo = "bar"
