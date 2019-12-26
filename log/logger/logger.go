@@ -116,11 +116,12 @@ func (l *Logger) log(lvl log.Level, tag, msg string, fields ...log.Field) {
 		line = 0
 	}
 
-	ctx := log.Ctx{
-		Level:     lvl.String(),
-		Timestamp: time.Now().UTC().Format(time.RFC3339Nano),
+	ctx := log.Context{
+		Level:     lvl,
+		Timestamp: time.Now().UTC(),
 		Service:   l.service,
-		File:      fmt.Sprintf("%s:%d", file, line),
+		File:      file,
+		Line:      int64(line),
 	}
 
 	f, err := l.fmt.Format(&ctx, tag, msg, fields...)

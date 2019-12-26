@@ -5,9 +5,9 @@ package stdout
 import (
 	"fmt"
 
-	"github.com/fatih/color"
 	"github.com/deixis/spine/config"
 	"github.com/deixis/spine/log"
+	"github.com/fatih/color"
 )
 
 const Name = "stdout"
@@ -25,7 +25,7 @@ func New(c config.Tree) (log.Printer, error) {
 
 type Logger struct{}
 
-func (l *Logger) Print(ctx *log.Ctx, s string) error {
+func (l *Logger) Print(ctx *log.Context, s string) error {
 	colour := pickColour(ctx.Level)
 	fmt.Println(colour.SprintFunc()(s))
 	return nil
@@ -35,13 +35,13 @@ func (l *Logger) Close() error {
 	return nil
 }
 
-func pickColour(lvl string) *color.Color {
+func pickColour(lvl log.Level) *color.Color {
 	switch lvl {
-	case "TR":
+	case log.LevelTrace:
 		return traceColour
-	case "WN":
+	case log.LevelWarning:
 		return warningColour
-	case "ER":
+	case log.LevelError:
 		return errorColour
 	}
 

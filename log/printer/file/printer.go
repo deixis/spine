@@ -10,9 +10,9 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/pkg/errors"
 	"github.com/deixis/spine/config"
 	"github.com/deixis/spine/log"
+	"github.com/pkg/errors"
 )
 
 const (
@@ -68,7 +68,7 @@ type Logger struct {
 	flusher chan struct{}
 }
 
-func (l *Logger) Print(ctx *log.Ctx, s string) error {
+func (l *Logger) Print(ctx *log.Context, s string) error {
 	l.mu.Lock()
 	defer l.mu.Unlock()
 

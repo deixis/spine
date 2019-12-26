@@ -8,12 +8,14 @@ import (
 	"github.com/deixis/spine/config"
 	"github.com/deixis/spine/log"
 	"github.com/deixis/spine/log/printer/file"
+	"github.com/deixis/spine/log/printer/stackdriver"
 	"github.com/deixis/spine/log/printer/stdout"
 )
 
 func init() {
 	Register(stdout.Name, stdout.New)
 	Register(file.Name, file.New)
+	Register(stackdriver.Name, stackdriver.New)
 }
 
 // Printer returns a new logger initialised with the given config

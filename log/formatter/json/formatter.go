@@ -6,6 +6,8 @@ package json
 
 import (
 	"encoding/json"
+	"fmt"
+	"time"
 
 	"github.com/deixis/spine/config"
 	"github.com/deixis/spine/log"
@@ -19,12 +21,14 @@ func New(c config.Tree) (log.Formatter, error) {
 
 type Formatter struct{}
 
-func (f *Formatter) Format(ctx *log.Ctx, tag, msg string, fields ...log.Field) (string, error) {
+func (f *Formatter) Format(
+	ctx *log.Context, tag, msg string, fields ...log.Field,
+) (string, error) {
 	out := &out{
-		Level:     ctx.Level,
-		Timestamp: ctx.Timestamp,
+		Level:     ctx.Level.String(),
+		Timestamp: ctx.Timestamp.Format(time.RFC3339Nano),
 		Service:   ctx.Service,
-		File:      ctx.File,
+		File:      fmt.Sprintf("%s:%d", ctx.File, ctx.Line),
 		Tag:       tag,
 		Msg:       msg,
 		Fields:    formatFields(fields),

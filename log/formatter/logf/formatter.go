@@ -7,6 +7,7 @@ package logf
 import (
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/deixis/spine/config"
 	"github.com/deixis/spine/log"
@@ -20,12 +21,14 @@ func New(c config.Tree) (log.Formatter, error) {
 
 type Formatter struct{}
 
-func (f *Formatter) Format(ctx *log.Ctx, tag, msg string, fields ...log.Field) (string, error) {
+func (f *Formatter) Format(
+	ctx *log.Context, tag, msg string, fields ...log.Field,
+) (string, error) {
 	base := strings.Join([]string{
-		ctx.Level,
-		ctx.Timestamp,
+		ctx.Level.String(),
+		ctx.Timestamp.Format(time.RFC3339Nano),
 		ctx.Service,
-		ctx.File,
+		fmt.Sprintf("%s:%d", ctx.File, ctx.Line),
 	}, " ")
 	// Add padding
 	padding := 75 - len(base)

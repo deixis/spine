@@ -3,6 +3,7 @@ package log
 import (
 	"context"
 	"fmt"
+	"time"
 )
 
 // Logger is an interface for app loggers
@@ -32,13 +33,13 @@ type Logger interface {
 // Formatter converts a log line to a specific format, such as JSON
 type Formatter interface {
 	// Format formats the given log line
-	Format(ctx *Ctx, tag, msg string, fields ...Field) (string, error)
+	Format(ctx *Context, tag, msg string, fields ...Field) (string, error)
 }
 
 // Printer outputs a log line somewhere, such as stdout, syslog, 3rd party service
 type Printer interface {
 	// Print prints the given log line
-	Print(ctx *Ctx, s string) error
+	Print(ctx *Context, s string) error
 
 	// Close implements the Closer interface
 	Close() error
@@ -83,12 +84,17 @@ func (l Level) String() string {
 	}
 }
 
-// Ctx carries the log line context (level, timestamp, ...)
-type Ctx struct {
-	Level     string
-	Timestamp string
+// Context carries the log line context (level, timestamp, ...)
+type Context struct {
+	Level     Level
+	Timestamp time.Time
 	Service   string
-	File      string
+	// File name. Depending on the runtime environment, this
+	// might be a simple name or a fully-qualified name.
+	File string
+	// Line within the source file. 1-based; 0 indicates no line number
+	// available.
+	Line int64
 }
 
 // Trace calls `Trace` on the context `Logger`
