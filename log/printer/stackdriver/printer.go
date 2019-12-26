@@ -6,6 +6,10 @@ package stackdriver
 import (
 	"context"
 	"encoding/json"
+	"fmt"
+	"os"
+	"sync"
+	"time"
 
 	"cloud.google.com/go/logging"
 	"github.com/deixis/spine/config"
@@ -14,7 +18,11 @@ import (
 	logpb "google.golang.org/genproto/googleapis/logging/v2"
 )
 
-const Name = "stackdriver"
+const (
+	Name = "stackdriver"
+
+	defaultFlushPeriod = 5 * time.Second
+)
 
 // Config defines the filer printer config
 type Config struct {
@@ -36,6 +44,8 @@ type Config struct {
 	// characters: [A-Za-z0-9]; and punctuation characters: forward-slash,
 	// underscore, hyphen, and period.
 	LogID string `toml:"log_id"`
+	// FlushPeriod is the frequence on which log lines are flushed to StackDriver
+	FlushPeriod int `toml:"flush_period"`
 }
 
 func New(tree config.Tree) (log.Printer, error) {
@@ -48,6 +58,10 @@ func New(tree config.Tree) (log.Printer, error) {
 	}
 	if c.LogID == "" {
 		return nil, errors.New("missing \"LogID\" on stackdriver log printer config")
+	}
+	flushPeriod := defaultFlushPeriod
+	if c.FlushPeriod > 0 {
+		flushPeriod = time.Duration(c.FlushPeriod) * time.Second
 	}
 
 	// Create a Client
@@ -63,13 +77,18 @@ func New(tree config.Tree) (log.Printer, error) {
 	}
 
 	l := &Logger{
-		C: client,
-		L: client.Logger(c.LogID),
+		flusher: make(chan struct{}, 1),
+		C:       client,
+		L:       client.Logger(c.LogID),
 	}
+	go l.flushPeriodically(flushPeriod)
 	return l, nil
 }
 
 type Logger struct {
+	mu      sync.Mutex
+	flusher chan struct{}
+
 	C *logging.Client
 	L *logging.Logger
 }
@@ -111,5 +130,24 @@ func (l *Logger) Print(ctx *log.Context, s string) error {
 }
 
 func (l *Logger) Close() error {
+	l.flusher <- struct{}{}
 	return l.C.Close() // Flush and exit
+}
+
+func (l *Logger) flushPeriodically(d time.Duration) {
+	tick := time.Tick(d)
+	for {
+		select {
+		case <-l.flusher:
+			return
+		case <-tick:
+			func() {
+				l.mu.Lock()
+				defer l.mu.Unlock()
+				if err := l.L.Flush(); err != nil {
+					fmt.Fprintf(os.Stderr, "%s: Error flushing Stackdriver buffer (%s)\n", time.Now(), err)
+				}
+			}()
+		}
+	}
 }
