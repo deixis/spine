@@ -7,12 +7,17 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/gorilla/mux"
+	"github.com/deixis/spine/bg"
+	"github.com/deixis/spine/cache"
 	"github.com/deixis/spine/config"
 	lcontext "github.com/deixis/spine/context"
+	"github.com/deixis/spine/disco"
 	"github.com/deixis/spine/log"
 	"github.com/deixis/spine/net"
+	"github.com/deixis/spine/schedule"
+	"github.com/deixis/spine/stats"
 	"github.com/deixis/spine/tracing"
+	"github.com/gorilla/mux"
 )
 
 // A Server defines parameters for running a spine compatible HTTP server
@@ -186,7 +191,8 @@ func (s *Server) buildHandleFunc(rootctx context.Context, e Endpoint) func(
 		}
 
 		// Attach app context services to request context
-		ctx := rootctx
+		// TODO: Merge with app context (like gRPC)
+		ctx := r.Context()
 		var cancel func()
 		if s.config.Request.Timeout() > 0 {
 			ctx, cancel = context.WithTimeout(ctx, s.config.Request.Timeout())
@@ -194,6 +200,16 @@ func (s *Server) buildHandleFunc(rootctx context.Context, e Endpoint) func(
 			ctx, cancel = context.WithCancel(ctx)
 		}
 		defer cancel()
+
+		// Attach app context services to request context
+		ctx = config.TreeWithContext(ctx, config.TreeFromContext(rootctx))
+		ctx = log.WithContext(ctx, log.FromContext(rootctx))
+		ctx = stats.WithContext(ctx, stats.FromContext(rootctx))
+		ctx = bg.RegWithContext(ctx, bg.RegFromContext(rootctx))
+		ctx = tracing.WithContext(ctx, tracing.FromContext(rootctx))
+		ctx = disco.AgentWithContext(ctx, disco.AgentFromContext(rootctx))
+		ctx = schedule.SchedulerWithContext(ctx, schedule.SchedulerFromContext(rootctx))
+		ctx = cache.WithContext(ctx, cache.FromContext(rootctx))
 
 		// Decode context
 		if s.config.Request.AllowContext {
@@ -215,6 +231,9 @@ func (s *Server) buildHandleFunc(rootctx context.Context, e Endpoint) func(
 		// Attach contextualised services
 		ctx = lcontext.WithTracer(ctx, tracing.FromContext(ctx))
 		ctx = lcontext.WithLogger(ctx, log.FromContext(ctx))
+
+		// Attach new context back to the HTTP request
+		req.HTTP = req.HTTP.WithContext(ctx)
 
 		if s.isState(net.StateDrain) {
 			log.FromContext(ctx).Trace("http.draining", "Handler is draining")
