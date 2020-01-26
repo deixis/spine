@@ -2,6 +2,21 @@
 
 Spine is a backend building block written in Go.
 
+## Packages
+
+1. [Background](./bg)
+1. [Cache](./cache)
+1. [Config](./config)
+1. [Context](./context)
+1. [Crypto](./crypto)
+1. [Disco](./disco)
+1. [Log](./log)
+1. [Net](./net)
+1. [Schedule](./schedule)
+1. [Stats](./stats)
+1. [Testing](./testing)
+1. [Tracing](./tracing)
+
 ## Demo
 
 Start a simple HTTP server
