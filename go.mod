@@ -3,14 +3,14 @@ module github.com/deixis/spine
 go 1.13
 
 require (
-	cloud.google.com/go v0.45.1 // indirect
+	cloud.google.com/go v0.45.1
 	cloud.google.com/go/logging v1.0.0
 	github.com/armon/go-metrics v0.3.0 // indirect
 	github.com/boltdb/bolt v1.3.1
 	github.com/codahale/hdrhistogram v0.0.0-20161010025455-3a0bb77429bd // indirect
 	github.com/fatih/color v1.7.0
 	github.com/gogo/protobuf v1.3.1
-	github.com/golang/protobuf v1.3.2
+	github.com/golang/protobuf v1.3.3
 	github.com/google/go-cmp v0.3.1 // indirect
 	github.com/google/uuid v1.1.1
 	github.com/gorilla/mux v1.7.3
@@ -40,5 +40,5 @@ require (
 	google.golang.org/api v0.10.0 // indirect
 	google.golang.org/appengine v1.6.2 // indirect
 	google.golang.org/genproto v0.0.0-20191108220845-16a3f7862a1a
-	google.golang.org/grpc v1.25.1
+	google.golang.org/grpc v1.28.0
 )
