@@ -7,8 +7,8 @@ import (
 	"encoding/gob"
 	"net/http"
 
-	"github.com/pkg/errors"
 	lcontext "github.com/deixis/spine/context"
+	"github.com/pkg/errors"
 )
 
 const (
@@ -19,11 +19,11 @@ const (
 func encodeContext(ctx context.Context, req *http.Request) error {
 	tr := lcontext.TransitFromContext(ctx)
 	if tr != nil {
-		var buf bytes.Buffer
-		if err := gob.NewEncoder(&buf).Encode(tr); err != nil {
+		data, err := tr.MarshalBinary()
+		if err != nil {
 			return errors.Wrap(err, "failed to encode transit")
 		}
-		text := base64.StdEncoding.EncodeToString(buf.Bytes())
+		text := base64.StdEncoding.EncodeToString(data)
 		req.Header.Add(transitHeader, text)
 	}
 
@@ -51,7 +51,7 @@ func decodeContext(parent context.Context, req *http.Request) (context.Context, 
 	var ctx context.Context
 	if len(data) > 0 {
 		tr := lcontext.TransitFactory()
-		if err := gob.NewDecoder(bytes.NewReader(data)).Decode(tr); err != nil {
+		if err := tr.UnmarshalBinary(data); err != nil {
 			return nil, err
 		}
 		ctx = lcontext.TransitWithContext(parent, tr)
