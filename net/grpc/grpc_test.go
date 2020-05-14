@@ -345,7 +345,8 @@ func TestDrain(t *testing.T) {
 	}
 	if !strings.Contains(err.Error(), "grpc: the connection is unavailable") &&
 		!strings.Contains(err.Error(), "transport is closing") &&
-		!strings.Contains(err.Error(), "all SubConns are in TransientFailure") {
+		!strings.Contains(err.Error(), "all SubConns are in TransientFailure") &&
+		!strings.Contains(err.Error(), "rpc error: code = Unavailable") {
 		t.Errorf("unexpected error %s", err)
 	}
 }
