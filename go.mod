@@ -6,8 +6,8 @@ require (
 	cloud.google.com/go v0.45.1
 	cloud.google.com/go/logging v1.0.0
 	github.com/armon/go-metrics v0.3.0 // indirect
-	github.com/boltdb/bolt v1.3.1
 	github.com/codahale/hdrhistogram v0.0.0-20161010025455-3a0bb77429bd // indirect
+	github.com/davecgh/go-spew v1.1.1
 	github.com/fatih/color v1.7.0
 	github.com/golang/protobuf v1.4.1
 	github.com/google/uuid v1.1.1
@@ -28,12 +28,12 @@ require (
 	github.com/pkg/errors v0.8.1
 	github.com/uber/jaeger-client-go v2.20.1+incompatible
 	github.com/uber/jaeger-lib v2.2.0+incompatible
+	go.etcd.io/bbolt v1.3.4
 	go.opencensus.io v0.22.2 // indirect
 	go.uber.org/atomic v1.5.0 // indirect
 	golang.org/x/crypto v0.0.0-20191108234033-bd318be0434a // indirect
 	golang.org/x/net v0.0.0-20191109021931-daa7c04131f5 // indirect
 	golang.org/x/sync v0.0.0-20190911185100-cd5d95a43a6e // indirect
-	golang.org/x/sys v0.0.0-20191110163157-d32e6e3b99c4 // indirect
 	golang.org/x/tools v0.0.0-20191109212701-97ad0ed33101 // indirect
 	google.golang.org/api v0.10.0 // indirect
 	google.golang.org/appengine v1.6.2 // indirect
