@@ -5,7 +5,6 @@ import (
 	"sync"
 	"sync/atomic"
 
-	"github.com/pkg/errors"
 	"github.com/deixis/spine/bg"
 	"github.com/deixis/spine/config"
 	lcontext "github.com/deixis/spine/context"
@@ -13,6 +12,7 @@ import (
 	"github.com/deixis/spine/net"
 	"github.com/deixis/spine/net/pubsub"
 	"github.com/deixis/spine/tracing"
+	"github.com/pkg/errors"
 )
 
 const (

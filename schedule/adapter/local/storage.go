@@ -9,10 +9,10 @@ import (
 	"time"
 
 	"github.com/boltdb/bolt"
-	"github.com/gogo/protobuf/proto"
-	"github.com/pkg/errors"
 	"github.com/deixis/spine/crypto"
 	pb "github.com/deixis/spine/schedule/adapter/local/localpb"
+	"github.com/golang/protobuf/proto"
+	"github.com/pkg/errors"
 )
 
 const (

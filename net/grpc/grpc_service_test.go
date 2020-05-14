@@ -6,10 +6,11 @@ package grpc_test
 import (
 	context "context"
 	fmt "fmt"
-	math "math"
-
 	proto "github.com/golang/protobuf/proto"
 	grpc "google.golang.org/grpc"
+	codes "google.golang.org/grpc/codes"
+	status "google.golang.org/grpc/status"
+	math "math"
 )
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -21,7 +22,7 @@ var _ = math.Inf
 // is compatible with the proto package it is being compiled against.
 // A compilation error at this line likely means your copy of the
 // proto package needs to be updated.
-const _ = proto.ProtoPackageIsVersion2 // please upgrade the proto package
+const _ = proto.ProtoPackageIsVersion3 // please upgrade the proto package
 
 type Request struct {
 	Msg                  string   `protobuf:"bytes,1,opt,name=msg,proto3" json:"msg,omitempty"`
@@ -106,7 +107,9 @@ func init() {
 	proto.RegisterType((*Response)(nil), "grpc_test.Response")
 }
 
-func init() { proto.RegisterFile("net/grpc/grpc_service_test.proto", fileDescriptor_2aa370c2ba25d01c) }
+func init() {
+	proto.RegisterFile("net/grpc/grpc_service_test.proto", fileDescriptor_2aa370c2ba25d01c)
+}
 
 var fileDescriptor_2aa370c2ba25d01c = []byte{
 	// 154 bytes of a gzipped FileDescriptorProto
@@ -124,11 +127,11 @@ var fileDescriptor_2aa370c2ba25d01c = []byte{
 
 // Reference imports to suppress errors if they are not otherwise used.
 var _ context.Context
-var _ grpc.ClientConn
+var _ grpc.ClientConnInterface
 
 // This is a compile-time assertion to ensure that this generated file
 // is compatible with the grpc package it is being compiled against.
-const _ = grpc.SupportPackageIsVersion4
+const _ = grpc.SupportPackageIsVersion6
 
 // TestClient is the client API for Test service.
 //
@@ -139,10 +142,10 @@ type TestClient interface {
 }
 
 type testClient struct {
-	cc *grpc.ClientConn
+	cc grpc.ClientConnInterface
 }
 
-func NewTestClient(cc *grpc.ClientConn) TestClient {
+func NewTestClient(cc grpc.ClientConnInterface) TestClient {
 	return &testClient{cc}
 }
 
@@ -190,6 +193,17 @@ func (x *testHelloFlowClient) Recv() (*Response, error) {
 type TestServer interface {
 	Hello(context.Context, *Request) (*Response, error)
 	HelloFlow(Test_HelloFlowServer) error
+}
+
+// UnimplementedTestServer can be embedded to have forward compatible implementations.
+type UnimplementedTestServer struct {
+}
+
+func (*UnimplementedTestServer) Hello(ctx context.Context, req *Request) (*Response, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Hello not implemented")
+}
+func (*UnimplementedTestServer) HelloFlow(srv Test_HelloFlowServer) error {
+	return status.Errorf(codes.Unimplemented, "method HelloFlow not implemented")
 }
 
 func RegisterTestServer(s *grpc.Server, srv TestServer) {

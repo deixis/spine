@@ -5,9 +5,6 @@ import (
 	"sync"
 	"sync/atomic"
 
-	"github.com/gogo/protobuf/proto"
-	nats "github.com/nats-io/nats.go"
-	"github.com/pkg/errors"
 	"github.com/deixis/spine/config"
 	lcontext "github.com/deixis/spine/context"
 	"github.com/deixis/spine/log"
@@ -15,6 +12,9 @@ import (
 	"github.com/deixis/spine/net/pubsub"
 	pb "github.com/deixis/spine/net/pubsub/adapter/nats/natspb"
 	"github.com/deixis/spine/tracing"
+	"github.com/golang/protobuf/proto"
+	nats "github.com/nats-io/nats.go"
+	"github.com/pkg/errors"
 )
 
 const (

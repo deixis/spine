@@ -7,10 +7,6 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/gogo/protobuf/proto"
-	nats "github.com/nats-io/nats.go"
-	stan "github.com/nats-io/stan.go"
-	"github.com/pkg/errors"
 	"github.com/deixis/spine/config"
 	lcontext "github.com/deixis/spine/context"
 	"github.com/deixis/spine/log"
@@ -18,6 +14,10 @@ import (
 	"github.com/deixis/spine/net/stream"
 	pb "github.com/deixis/spine/net/stream/adapter/stan/stanpb"
 	"github.com/deixis/spine/tracing"
+	"github.com/golang/protobuf/proto"
+	nats "github.com/nats-io/nats.go"
+	stan "github.com/nats-io/stan.go"
+	"github.com/pkg/errors"
 )
 
 const (

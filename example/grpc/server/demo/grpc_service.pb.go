@@ -8,6 +8,8 @@ import (
 	fmt "fmt"
 	proto "github.com/golang/protobuf/proto"
 	grpc "google.golang.org/grpc"
+	codes "google.golang.org/grpc/codes"
+	status "google.golang.org/grpc/status"
 	math "math"
 )
 
@@ -20,7 +22,7 @@ var _ = math.Inf
 // is compatible with the proto package it is being compiled against.
 // A compilation error at this line likely means your copy of the
 // proto package needs to be updated.
-const _ = proto.ProtoPackageIsVersion2 // please upgrade the proto package
+const _ = proto.ProtoPackageIsVersion3 // please upgrade the proto package
 
 type Request struct {
 	Msg                  string   `protobuf:"bytes,1,opt,name=msg,proto3" json:"msg,omitempty"`
@@ -125,11 +127,11 @@ var fileDescriptor_37276dcd28d66420 = []byte{
 
 // Reference imports to suppress errors if they are not otherwise used.
 var _ context.Context
-var _ grpc.ClientConn
+var _ grpc.ClientConnInterface
 
 // This is a compile-time assertion to ensure that this generated file
 // is compatible with the grpc package it is being compiled against.
-const _ = grpc.SupportPackageIsVersion4
+const _ = grpc.SupportPackageIsVersion6
 
 // DemoClient is the client API for Demo service.
 //
@@ -139,10 +141,10 @@ type DemoClient interface {
 }
 
 type demoClient struct {
-	cc *grpc.ClientConn
+	cc grpc.ClientConnInterface
 }
 
-func NewDemoClient(cc *grpc.ClientConn) DemoClient {
+func NewDemoClient(cc grpc.ClientConnInterface) DemoClient {
 	return &demoClient{cc}
 }
 
@@ -158,6 +160,14 @@ func (c *demoClient) Hello(ctx context.Context, in *Request, opts ...grpc.CallOp
 // DemoServer is the server API for Demo service.
 type DemoServer interface {
 	Hello(context.Context, *Request) (*Response, error)
+}
+
+// UnimplementedDemoServer can be embedded to have forward compatible implementations.
+type UnimplementedDemoServer struct {
+}
+
+func (*UnimplementedDemoServer) Hello(ctx context.Context, req *Request) (*Response, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Hello not implemented")
 }
 
 func RegisterDemoServer(s *grpc.Server, srv DemoServer) {
