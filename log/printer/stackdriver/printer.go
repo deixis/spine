@@ -46,6 +46,12 @@ type Config struct {
 	LogID string `toml:"log_id"`
 	// FlushPeriod is the frequence on which log lines are flushed to StackDriver
 	FlushPeriod int `toml:"flush_period"`
+	// CommonLabels are labels that apply to all log entries written from a Logger,
+	// so that you don't have to repeat them in each log entry's Labels field. If
+	// any of the log entries contains a (key, value) with the same key that is in
+	// CommonLabels, then the entry's (key, value) overrides the one in
+	// CommonLabels.
+	CommonLabels map[string]string `toml:"common_labels"`
 }
 
 func New(tree config.Tree) (log.Printer, error) {
@@ -71,6 +77,11 @@ func New(tree config.Tree) (log.Printer, error) {
 		return nil, errors.Wrap(err, "failing to initialise Stackdriver client")
 	}
 
+	var opts []logging.LoggerOption
+	if c.CommonLabels != nil {
+		opts = append(opts, logging.CommonLabels(c.CommonLabels))
+	}
+
 	// Test connection to Stackdriver
 	if err := client.Ping(ctx); err != nil {
 		return nil, errors.Wrap(err, "failing to ping Stackdriver")
@@ -79,7 +90,7 @@ func New(tree config.Tree) (log.Printer, error) {
 	l := &Logger{
 		flusher: make(chan struct{}, 1),
 		C:       client,
-		L:       client.Logger(c.LogID),
+		L:       client.Logger(c.LogID, opts...),
 	}
 	go l.flushPeriodically(flushPeriod)
 	return l, nil
