@@ -20,7 +20,7 @@ require (
 	github.com/mattn/go-isatty v0.0.10 // indirect
 	github.com/nats-io/nats-server/v2 v2.1.2 // indirect
 	github.com/nats-io/nats-streaming-server v0.16.2 // indirect
-	github.com/nats-io/nats.go v1.10.0
+	github.com/nats-io/nats.go v1.9.2
 	github.com/nats-io/stan.go v0.5.0
 	github.com/opentracing/opentracing-go v1.1.0
 	github.com/pelletier/go-toml v1.6.0
