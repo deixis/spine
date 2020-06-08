@@ -27,11 +27,12 @@ require (
 	github.com/pkg/errors v0.8.1
 	github.com/uber/jaeger-client-go v2.20.1+incompatible
 	github.com/uber/jaeger-lib v2.2.0+incompatible
-	go.etcd.io/bbolt v1.3.4
+	go.etcd.io/bbolt v1.3.3
 	go.opencensus.io v0.22.2 // indirect
 	go.uber.org/atomic v1.5.0 // indirect
 	golang.org/x/net v0.0.0-20191109021931-daa7c04131f5 // indirect
 	golang.org/x/sync v0.0.0-20190911185100-cd5d95a43a6e // indirect
+	golang.org/x/sys v0.0.0-20200202164722-d101bd2416d5 // indirect
 	golang.org/x/tools v0.0.0-20191109212701-97ad0ed33101 // indirect
 	google.golang.org/api v0.10.0 // indirect
 	google.golang.org/appengine v1.6.2 // indirect
