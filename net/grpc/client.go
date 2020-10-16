@@ -9,12 +9,12 @@ import (
 	"io/ioutil"
 	"strings"
 
+	scontext "github.com/deixis/spine/context"
+	"github.com/deixis/spine/log"
+	"github.com/deixis/spine/tracing"
 	"github.com/opentracing/opentracing-go"
 	"github.com/opentracing/opentracing-go/ext"
 	"github.com/pkg/errors"
-	lcontext "github.com/deixis/spine/context"
-	"github.com/deixis/spine/log"
-	"github.com/deixis/spine/tracing"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/connectivity"
 	"google.golang.org/grpc/credentials"
@@ -158,7 +158,7 @@ func (c *Client) unaryInterceptor(
 
 		// Encode shipments
 		var shipments []shipment
-		lcontext.ShipmentRange(ctx, func(k string, v interface{}) bool {
+		scontext.ShipmentRange(ctx, func(k string, v interface{}) bool {
 			shipments = append([]shipment{{k, v}}, shipments...) // prepend
 			return true
 		})
@@ -245,7 +245,7 @@ func (c *Client) streamInterceptor(
 
 		// Encode shipments
 		var shipments []shipment
-		lcontext.ShipmentRange(ctx, func(k string, v interface{}) bool {
+		scontext.ShipmentRange(ctx, func(k string, v interface{}) bool {
 			shipments = append([]shipment{{k, v}}, shipments...) // prepend
 			return true
 		})

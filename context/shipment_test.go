@@ -4,7 +4,7 @@ import (
 	"context"
 	"testing"
 
-	lcontext "github.com/deixis/spine/context"
+	scontext "github.com/deixis/spine/context"
 )
 
 func TestShipment_Range(t *testing.T) {
@@ -32,10 +32,10 @@ func TestShipment_Range(t *testing.T) {
 
 	ctx := context.Background()
 	for i, test := range tests {
-		ctx = lcontext.WithShipment(ctx, test.key, test.val)
+		ctx = scontext.WithShipment(ctx, test.key, test.val)
 
 		var got int
-		lcontext.ShipmentRange(ctx, func(k string, value interface{}) bool {
+		scontext.ShipmentRange(ctx, func(k string, value interface{}) bool {
 			got++
 			return true
 		})

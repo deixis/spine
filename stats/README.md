@@ -14,7 +14,7 @@ import (
 
 	opentracing "github.com/opentracing/opentracing-go"
 	olog "github.com/opentracing/opentracing-go/log"
-	lcontext "github.com/deixis/spine/context"
+	scontext "github.com/deixis/spine/context"
 	"github.com/deixis/spine/log"
 	"github.com/deixis/spine/stats"
 	"github.com/deixis/spine/tracing"

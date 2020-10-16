@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 	"time"
+
+	"github.com/deixis/spine/contextutil"
 )
 
 // Logger is an interface for app loggers
@@ -118,7 +120,7 @@ var activeContextKey = contextKey{}
 
 // FromContext returns a `Logger` instance associated with `ctx`, or
 // `NopLogger` if no `Logger` instance could be found.
-func FromContext(ctx context.Context) Logger {
+func FromContext(ctx contextutil.ValueContext) Logger {
 	val := ctx.Value(activeContextKey)
 	if o, ok := val.(Logger); ok {
 		return o

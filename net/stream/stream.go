@@ -2,6 +2,8 @@ package stream
 
 import (
 	"context"
+
+	"github.com/deixis/spine/contextutil"
 )
 
 type MsgHandler func(context.Context, []byte) error
@@ -53,7 +55,7 @@ var activePubContextKey = contextKey{}
 
 // PubFromContext returns a `Pub` instance associated with `ctx`, or
 // the local `Pub` if no instance could be found.
-func PubFromContext(ctx context.Context) Pub {
+func PubFromContext(ctx contextutil.ValueContext) Pub {
 	val := ctx.Value(activePubContextKey)
 	if o, ok := val.(Pub); ok {
 		return o
@@ -70,7 +72,7 @@ var activeSubContextKey = contextKey{}
 
 // SubFromContext returns a `Sub` instance associated with `ctx`, or
 // the local `Sub` if no instance could be found.
-func SubFromContext(ctx context.Context) Sub {
+func SubFromContext(ctx contextutil.ValueContext) Sub {
 	val := ctx.Value(activeSubContextKey)
 	if o, ok := val.(Sub); ok {
 		return o
@@ -87,7 +89,7 @@ var activeStreamContextKey = contextKey{}
 
 // FromContext returns a `Stream` instance associated with `ctx`, or
 // the local `Sub` if no instance could be found.
-func FromContext(ctx context.Context) Stream {
+func FromContext(ctx contextutil.ValueContext) Stream {
 	val := ctx.Value(activeStreamContextKey)
 	if o, ok := val.(Stream); ok {
 		return o

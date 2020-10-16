@@ -5,11 +5,12 @@ import (
 	"runtime/debug"
 	"time"
 
-	opentracing "github.com/opentracing/opentracing-go"
-	olog "github.com/opentracing/opentracing-go/log"
+	"github.com/deixis/spine/contextutil"
 	"github.com/deixis/spine/log"
 	"github.com/deixis/spine/stats"
 	"github.com/deixis/spine/tracing"
+	opentracing "github.com/opentracing/opentracing-go"
+	olog "github.com/opentracing/opentracing-go/log"
 )
 
 type MsgHandler func(context.Context, []byte)
@@ -246,7 +247,7 @@ var activePubContextKey = contextKey{}
 
 // PubFromContext returns a `Pub` instance associated with `ctx`, or
 // the local `Pub` if no instance could be found.
-func PubFromContext(ctx context.Context) Pub {
+func PubFromContext(ctx contextutil.ValueContext) Pub {
 	val := ctx.Value(activePubContextKey)
 	if o, ok := val.(Pub); ok {
 		return o
@@ -263,7 +264,7 @@ var activeSubContextKey = contextKey{}
 
 // SubFromContext returns a `Sub` instance associated with `ctx`, or
 // the local `Sub` if no instance could be found.
-func SubFromContext(ctx context.Context) Sub {
+func SubFromContext(ctx contextutil.ValueContext) Sub {
 	val := ctx.Value(activeSubContextKey)
 	if o, ok := val.(Sub); ok {
 		return o
@@ -280,7 +281,7 @@ var activePubSubContextKey = contextKey{}
 
 // FromContext returns a `PubSub` instance associated with `ctx`, or
 // the local `Sub` if no instance could be found.
-func FromContext(ctx context.Context) PubSub {
+func FromContext(ctx contextutil.ValueContext) PubSub {
 	val := ctx.Value(activePubSubContextKey)
 	if o, ok := val.(PubSub); ok {
 		return o

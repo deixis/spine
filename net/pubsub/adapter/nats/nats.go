@@ -6,7 +6,7 @@ import (
 	"sync/atomic"
 
 	"github.com/deixis/spine/config"
-	lcontext "github.com/deixis/spine/context"
+	scontext "github.com/deixis/spine/context"
 	"github.com/deixis/spine/log"
 	"github.com/deixis/spine/net"
 	"github.com/deixis/spine/net/pubsub"
@@ -85,7 +85,7 @@ func (ps *NATS) Publish(ctx context.Context, ch string, data []byte) error {
 		Payload: data,
 	}
 
-	tr := lcontext.TransitFromContext(ctx)
+	tr := scontext.TransitFromContext(ctx)
 	if tr != nil {
 		data, err := tr.MarshalBinary()
 		if err != nil {
@@ -121,27 +121,27 @@ func (ps *NATS) Subscribe(q, ch string, f pubsub.MsgHandler) error {
 		defer cancel()
 
 		// Extract transit
-		var tr lcontext.Transit
+		var tr scontext.Transit
 		if len(pb.Transit) > 0 {
-			tr = lcontext.TransitFactory()
+			tr = scontext.TransitFactory()
 			err := tr.UnmarshalBinary(pb.Transit)
 			if err != nil {
 				log.Err(ctx, "pubsub.transit.err", "Error unmarshalling transit",
 					log.Error(err),
 				)
-				ctx, tr = lcontext.NewTransitWithContext(ctx)
+				ctx, tr = scontext.NewTransitWithContext(ctx)
 			} else {
-				ctx = lcontext.TransitWithContext(ctx, tr)
+				ctx = scontext.TransitWithContext(ctx, tr)
 			}
 		} else {
-			ctx, tr = lcontext.NewTransitWithContext(ctx)
+			ctx, tr = scontext.NewTransitWithContext(ctx)
 		}
 
 		// TODO: Create follow up transit
 
 		// Attach transit-specific services
-		ctx = lcontext.WithTracer(ctx, tracing.FromContext(ctx))
-		ctx = lcontext.WithLogger(ctx, log.FromContext(ctx))
+		ctx = scontext.WithTracer(ctx, tracing.FromContext(ctx))
+		ctx = scontext.WithLogger(ctx, log.FromContext(ctx))
 
 		// Call handler
 		f(ctx, pb.Payload)

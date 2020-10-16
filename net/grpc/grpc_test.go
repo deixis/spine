@@ -11,7 +11,7 @@ import (
 	"github.com/deixis/spine/tracing"
 
 	"github.com/deixis/spine/config"
-	lcontext "github.com/deixis/spine/context"
+	scontext "github.com/deixis/spine/context"
 	"github.com/deixis/spine/log"
 	lgrpc "github.com/deixis/spine/net/grpc"
 	lt "github.com/deixis/spine/testing"
@@ -49,13 +49,13 @@ func TestClientServer(t *testing.T) {
 	}
 	testClient := NewTestClient(c.GRPC)
 
-	ctx, _ = lcontext.NewTransitWithContext(ctx)
+	ctx, _ = scontext.NewTransitWithContext(ctx)
 
 	// Prepare context
 	log.Trace(ctx, "prepare", "Prepare context")
-	ctx = lcontext.WithShipment(ctx, "lang", "en_GB")
-	ctx = lcontext.WithShipment(ctx, "ip", "10.0.0.21")
-	ctx = lcontext.WithShipment(ctx, "flag", 3)
+	ctx = scontext.WithShipment(ctx, "lang", "en_GB")
+	ctx = scontext.WithShipment(ctx, "ip", "10.0.0.21")
+	ctx = scontext.WithShipment(ctx, "flag", 3)
 
 	res, err := testClient.Hello(ctx, &Request{Msg: "Ping"})
 	if err != nil {
@@ -101,13 +101,13 @@ func TestStream(t *testing.T) {
 	}
 	testClient := NewTestClient(c.GRPC)
 
-	ctx, _ = lcontext.NewTransitWithContext(ctx)
+	ctx, _ = scontext.NewTransitWithContext(ctx)
 
 	// Prepare context
 	log.Trace(ctx, "prepare", "Prepare context")
-	ctx = lcontext.WithShipment(ctx, "lang", "en_GB")
-	ctx = lcontext.WithShipment(ctx, "ip", "10.0.0.21")
-	ctx = lcontext.WithShipment(ctx, "flag", 3)
+	ctx = scontext.WithShipment(ctx, "lang", "en_GB")
+	ctx = scontext.WithShipment(ctx, "ip", "10.0.0.21")
+	ctx = scontext.WithShipment(ctx, "flag", 3)
 
 	flowClient, err := testClient.HelloFlow(ctx)
 	if err != nil {
@@ -173,9 +173,9 @@ func TestClientServerWithTLS(t *testing.T) {
 
 	// Prepare context
 	log.Trace(ctx, "prepare", "Prepare context")
-	ctx = lcontext.WithShipment(ctx, "lang", "en_GB")
-	ctx = lcontext.WithShipment(ctx, "ip", "10.0.0.21")
-	ctx = lcontext.WithShipment(ctx, "flag", 3)
+	ctx = scontext.WithShipment(ctx, "lang", "en_GB")
+	ctx = scontext.WithShipment(ctx, "ip", "10.0.0.21")
+	ctx = scontext.WithShipment(ctx, "flag", 3)
 
 	res, err := testClient.Hello(ctx, &Request{Msg: "Ping"})
 	if err != nil {
@@ -231,9 +231,9 @@ func TestClientServerWithMutualTLS(t *testing.T) {
 
 	// Prepare context
 	log.Trace(ctx, "prepare", "Prepare context")
-	ctx = lcontext.WithShipment(ctx, "lang", "en_GB")
-	ctx = lcontext.WithShipment(ctx, "ip", "10.0.0.21")
-	ctx = lcontext.WithShipment(ctx, "flag", 3)
+	ctx = scontext.WithShipment(ctx, "lang", "en_GB")
+	ctx = scontext.WithShipment(ctx, "ip", "10.0.0.21")
+	ctx = scontext.WithShipment(ctx, "flag", 3)
 
 	res, err := testClient.Hello(ctx, &Request{Msg: "Ping"})
 	if err != nil {
@@ -279,13 +279,13 @@ func TestClientServer_WithOpenTracing(t *testing.T) {
 	}
 	testClient := NewTestClient(c.GRPC)
 
-	ctx, _ = lcontext.NewTransitWithContext(ctx)
+	ctx, _ = scontext.NewTransitWithContext(ctx)
 
 	// Prepare context
 	log.Trace(ctx, "prepare", "Prepare context")
-	ctx = lcontext.WithShipment(ctx, "lang", "en_GB")
-	ctx = lcontext.WithShipment(ctx, "ip", "10.0.0.21")
-	ctx = lcontext.WithShipment(ctx, "flag", 3)
+	ctx = scontext.WithShipment(ctx, "lang", "en_GB")
+	ctx = scontext.WithShipment(ctx, "ip", "10.0.0.21")
+	ctx = scontext.WithShipment(ctx, "flag", 3)
 
 	span, ctx := tracing.StartSpanFromContext(ctx, "hello")
 	defer span.Finish()
@@ -332,9 +332,9 @@ func TestDrain(t *testing.T) {
 
 	// Prepare context
 	log.Trace(ctx, "prepare", "Prepare context")
-	ctx = lcontext.WithShipment(ctx, "lang", "en_GB")
-	ctx = lcontext.WithShipment(ctx, "ip", "10.0.0.21")
-	ctx = lcontext.WithShipment(ctx, "flag", 3)
+	ctx = scontext.WithShipment(ctx, "lang", "en_GB")
+	ctx = scontext.WithShipment(ctx, "ip", "10.0.0.21")
+	ctx = scontext.WithShipment(ctx, "flag", 3)
 
 	// Start draining server
 	h.Drain()
@@ -361,7 +361,7 @@ func (s *MyTestServer) Hello(
 	log.Trace(ctx, "test.hello", "Calling Hello")
 
 	expectLang := "en_GB"
-	lang, ok := lcontext.Shipment(ctx, "lang").(string)
+	lang, ok := scontext.Shipment(ctx, "lang").(string)
 	if !ok || lang != expectLang {
 		s.t.Errorf("expect lang %s from shipment, but got %s", expectLang, lang)
 	}
@@ -379,7 +379,7 @@ func (s *MyTestServer) HelloFlow(
 	log.Trace(stream.Context(), "test.hello", "Calling Hello")
 
 	expectLang := "en_GB"
-	lang, ok := lcontext.Shipment(stream.Context(), "lang").(string)
+	lang, ok := scontext.Shipment(stream.Context(), "lang").(string)
 	if !ok || lang != expectLang {
 		s.t.Errorf("expect lang %s from shipment, but got %s", expectLang, lang)
 	}

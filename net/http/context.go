@@ -7,7 +7,7 @@ import (
 	"encoding/gob"
 	"net/http"
 
-	lcontext "github.com/deixis/spine/context"
+	scontext "github.com/deixis/spine/context"
 	"github.com/pkg/errors"
 )
 
@@ -17,7 +17,7 @@ const (
 )
 
 func encodeContext(ctx context.Context, req *http.Request) error {
-	tr := lcontext.TransitFromContext(ctx)
+	tr := scontext.TransitFromContext(ctx)
 	if tr != nil {
 		data, err := tr.MarshalBinary()
 		if err != nil {
@@ -29,7 +29,7 @@ func encodeContext(ctx context.Context, req *http.Request) error {
 
 	// Encode shipments
 	var shipments []shipment
-	lcontext.ShipmentRange(ctx, func(k string, v interface{}) bool {
+	scontext.ShipmentRange(ctx, func(k string, v interface{}) bool {
 		shipments = append([]shipment{{k, v}}, shipments...) // prepend
 		return true
 	})
@@ -50,13 +50,13 @@ func decodeContext(parent context.Context, req *http.Request) (context.Context, 
 	}
 	var ctx context.Context
 	if len(data) > 0 {
-		tr := lcontext.TransitFactory()
+		tr := scontext.TransitFactory()
 		if err := tr.UnmarshalBinary(data); err != nil {
 			return nil, err
 		}
-		ctx = lcontext.TransitWithContext(parent, tr)
+		ctx = scontext.TransitWithContext(parent, tr)
 	} else {
-		ctx, _ = lcontext.NewTransitWithContext(parent)
+		ctx, _ = scontext.NewTransitWithContext(parent)
 	}
 
 	// Decode shipments
@@ -71,7 +71,7 @@ func decodeContext(parent context.Context, req *http.Request) (context.Context, 
 			return nil, err
 		}
 		for _, s := range shipments {
-			ctx = lcontext.WithShipment(ctx, s.Key, s.Value)
+			ctx = scontext.WithShipment(ctx, s.Key, s.Value)
 		}
 	}
 	return ctx, nil

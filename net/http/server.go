@@ -10,7 +10,7 @@ import (
 	"github.com/deixis/spine/bg"
 	"github.com/deixis/spine/cache"
 	"github.com/deixis/spine/config"
-	lcontext "github.com/deixis/spine/context"
+	scontext "github.com/deixis/spine/context"
 	"github.com/deixis/spine/disco"
 	"github.com/deixis/spine/log"
 	"github.com/deixis/spine/net"
@@ -225,12 +225,12 @@ func (s *Server) buildHandleFunc(rootctx context.Context, e Endpoint) func(
 			}
 			ctx = rctx
 		} else {
-			ctx, _ = lcontext.NewTransitWithContext(ctx)
+			ctx, _ = scontext.NewTransitWithContext(ctx)
 		}
 
 		// Attach contextualised services
-		ctx = lcontext.WithTracer(ctx, tracing.FromContext(ctx))
-		ctx = lcontext.WithLogger(ctx, log.FromContext(ctx))
+		ctx = scontext.WithTracer(ctx, tracing.FromContext(ctx))
+		ctx = scontext.WithLogger(ctx, log.FromContext(ctx))
 
 		// Attach new context back to the HTTP request
 		req.HTTP = req.HTTP.WithContext(ctx)

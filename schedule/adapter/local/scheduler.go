@@ -8,15 +8,15 @@ import (
 	"sync"
 	"time"
 
-	opentracing "github.com/opentracing/opentracing-go"
-	olog "github.com/opentracing/opentracing-go/log"
-	"github.com/pkg/errors"
 	"github.com/deixis/spine/config"
-	lcontext "github.com/deixis/spine/context"
+	scontext "github.com/deixis/spine/context"
 	"github.com/deixis/spine/log"
 	"github.com/deixis/spine/schedule"
 	pb "github.com/deixis/spine/schedule/adapter/local/localpb"
 	"github.com/deixis/spine/tracing"
+	opentracing "github.com/opentracing/opentracing-go"
+	olog "github.com/opentracing/opentracing-go/log"
+	"github.com/pkg/errors"
 )
 
 // TODO: Cleanup old events (Add window to config - e.g. keep 1 week for debugging purpose)
@@ -190,9 +190,9 @@ func (s *scheduler) process(e *pb.Event) {
 	fn := s.handler(j.Target)
 
 	// Prepare transit
-	ctx, tr := lcontext.NewTransitWithContext(s.ctx)
-	ctx = lcontext.WithTracer(ctx, tracing.FromContext(ctx))
-	ctx = lcontext.WithLogger(ctx, log.FromContext(ctx))
+	ctx, tr := scontext.NewTransitWithContext(s.ctx)
+	ctx = scontext.WithTracer(ctx, tracing.FromContext(ctx))
+	ctx = scontext.WithLogger(ctx, log.FromContext(ctx))
 
 	// Trace request
 	// TODO: Create middleware

@@ -3,6 +3,8 @@ package stats
 import (
 	"context"
 	"time"
+
+	"github.com/deixis/spine/contextutil"
 )
 
 // Stats is an interface for app statistics
@@ -66,7 +68,7 @@ var activeContextKey = contextKey{}
 
 // FromContext returns a `Stats` instance associated with `ctx`, or
 // `NopStats` if no `Stats` instance could be found.
-func FromContext(ctx context.Context) Stats {
+func FromContext(ctx contextutil.ValueContext) Stats {
 	val := ctx.Value(activeContextKey)
 	if o, ok := val.(Stats); ok {
 		return o

@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/deixis/spine/config"
-	lcontext "github.com/deixis/spine/context"
+	scontext "github.com/deixis/spine/context"
 	"github.com/deixis/spine/log"
 	"github.com/deixis/spine/net/http"
 	lt "github.com/deixis/spine/testing"
@@ -42,12 +42,12 @@ func TestDefaultBehaviour(t *testing.T) {
 	// Prepare context
 	ctx, cancel := context.WithCancel(appCtx)
 	defer cancel()
-	ctx, tr := lcontext.NewTransitWithContext(ctx)
+	ctx, tr := scontext.NewTransitWithContext(ctx)
 
 	log.Trace(ctx, "prepare", "Prepare context")
-	ctx = lcontext.WithShipment(ctx, "lang", "en_GB")
-	ctx = lcontext.WithShipment(ctx, "ip", "10.0.0.21")
-	ctx = lcontext.WithShipment(ctx, "flag", 3)
+	ctx = scontext.WithShipment(ctx, "lang", "en_GB")
+	ctx = scontext.WithShipment(ctx, "ip", "10.0.0.21")
+	ctx = scontext.WithShipment(ctx, "flag", 3)
 
 	// Send request
 	client := http.Client{}
@@ -60,11 +60,11 @@ func TestDefaultBehaviour(t *testing.T) {
 	}
 
 	// Compare
-	if tr.UUID() == lcontext.TransitFromContext(gotContext).UUID() {
+	if tr.UUID() == scontext.TransitFromContext(gotContext).UUID() {
 		t.Error("expect contexts to be different")
 	}
-	lcontext.ShipmentRange(ctx, func(key string, expect interface{}) bool {
-		v := lcontext.Shipment(gotContext, key)
+	scontext.ShipmentRange(ctx, func(key string, expect interface{}) bool {
+		v := scontext.Shipment(gotContext, key)
 		if v != nil {
 			t.Errorf("expect key %s to NOT be present", key)
 		}
@@ -95,12 +95,12 @@ func TestAllowContext(t *testing.T) {
 	// Prepare context
 	ctx, cancel := context.WithCancel(appCtx)
 	defer cancel()
-	ctx, tr := lcontext.NewTransitWithContext(ctx)
+	ctx, tr := scontext.NewTransitWithContext(ctx)
 
 	log.Trace(ctx, "prepare", "Prepare context")
-	ctx = lcontext.WithShipment(ctx, "lang", "en_GB")
-	ctx = lcontext.WithShipment(ctx, "ip", "10.0.0.21")
-	ctx = lcontext.WithShipment(ctx, "flag", 3)
+	ctx = scontext.WithShipment(ctx, "lang", "en_GB")
+	ctx = scontext.WithShipment(ctx, "ip", "10.0.0.21")
+	ctx = scontext.WithShipment(ctx, "flag", 3)
 
 	// Send request
 	client := http.Client{}
@@ -113,11 +113,11 @@ func TestAllowContext(t *testing.T) {
 	}
 
 	// Compare
-	if tr.UUID() == lcontext.TransitFromContext(gotContext).UUID() {
+	if tr.UUID() == scontext.TransitFromContext(gotContext).UUID() {
 		t.Error("expect contexts to be different")
 	}
-	lcontext.ShipmentRange(ctx, func(key string, expect interface{}) bool {
-		v := lcontext.Shipment(gotContext, key)
+	scontext.ShipmentRange(ctx, func(key string, expect interface{}) bool {
+		v := scontext.Shipment(gotContext, key)
 		if v != nil {
 			t.Errorf("expect key %s to NOT be present", key)
 		}
@@ -147,12 +147,12 @@ func TestBlockContext(t *testing.T) {
 	// Prepare context
 	ctx, cancel := context.WithCancel(appCtx)
 	defer cancel()
-	ctx, tr := lcontext.NewTransitWithContext(ctx)
+	ctx, tr := scontext.NewTransitWithContext(ctx)
 
 	log.Trace(ctx, "prepare", "Prepare context")
-	ctx = lcontext.WithShipment(ctx, "lang", "en_GB")
-	ctx = lcontext.WithShipment(ctx, "ip", "10.0.0.21")
-	ctx = lcontext.WithShipment(ctx, "flag", 3)
+	ctx = scontext.WithShipment(ctx, "lang", "en_GB")
+	ctx = scontext.WithShipment(ctx, "ip", "10.0.0.21")
+	ctx = scontext.WithShipment(ctx, "flag", 3)
 
 	// Send request
 	client := http.Client{
@@ -167,11 +167,11 @@ func TestBlockContext(t *testing.T) {
 	}
 
 	// Compare
-	if tr.UUID() == lcontext.TransitFromContext(gotContext).UUID() {
+	if tr.UUID() == scontext.TransitFromContext(gotContext).UUID() {
 		t.Error("expect contexts to be different")
 	}
-	lcontext.ShipmentRange(ctx, func(key string, expect interface{}) bool {
-		v := lcontext.Shipment(gotContext, key)
+	scontext.ShipmentRange(ctx, func(key string, expect interface{}) bool {
+		v := scontext.Shipment(gotContext, key)
 		if v != nil {
 			t.Errorf("expect key %s to NOT be present", key)
 		}
@@ -208,11 +208,11 @@ func TestPropagateContext(t *testing.T) {
 	addr := startServer(appCtx, h)
 
 	// Prepare context
-	ctx, _ := lcontext.NewTransitWithContext(appCtx)
+	ctx, _ := scontext.NewTransitWithContext(appCtx)
 	log.Trace(ctx, "prepare", "Prepare context")
-	lcontext.WithShipment(ctx, "lang", "en_GB")
-	lcontext.WithShipment(ctx, "ip", "10.0.0.21")
-	lcontext.WithShipment(ctx, "flag", 3)
+	scontext.WithShipment(ctx, "lang", "en_GB")
+	scontext.WithShipment(ctx, "ip", "10.0.0.21")
+	scontext.WithShipment(ctx, "flag", 3)
 
 	// Send request
 	client := http.Client{
@@ -227,16 +227,16 @@ func TestPropagateContext(t *testing.T) {
 	}
 
 	// Compare
-	expectTransit := lcontext.TransitFromContext(ctx)
-	gotTransit := lcontext.TransitFromContext(gotContext)
+	expectTransit := scontext.TransitFromContext(ctx)
+	gotTransit := scontext.TransitFromContext(gotContext)
 	if expectTransit.UUID() != gotTransit.UUID() {
 		t.Errorf("expect context to have UUID %s, but got %s", expectTransit.UUID(), gotTransit.UUID())
 	}
 	if gotContext == nil {
 		t.Fatalf("expect KV to not be nil")
 	}
-	lcontext.ShipmentRange(ctx, func(key string, expect interface{}) bool {
-		got := lcontext.Shipment(gotContext, key)
+	scontext.ShipmentRange(ctx, func(key string, expect interface{}) bool {
+		got := scontext.Shipment(gotContext, key)
 		if expect != got {
 			t.Errorf("expect to value for key %s to be %v, but got %v", key, expect, got)
 		}
@@ -264,7 +264,7 @@ func TestShipments(t *testing.T) {
 	) {
 		log.Trace(ctx, "http.test", "Test endpoint called")
 
-		lang, ok := lcontext.Shipment(ctx, "lang").(string)
+		lang, ok := scontext.Shipment(ctx, "lang").(string)
 		if !ok || lang != "en_GB" {
 			t.Errorf("expect to get lang en_GB, but got %s", lang)
 		}
@@ -274,11 +274,11 @@ func TestShipments(t *testing.T) {
 	addr := startServer(appCtx, h)
 
 	// Prepare context
-	ctx, _ := lcontext.NewTransitWithContext(appCtx)
-	ctx = lcontext.WithShipment(ctx, "prepare", "Prepare context")
-	ctx = lcontext.WithShipment(ctx, "lang", "en_GB")
-	ctx = lcontext.WithShipment(ctx, "ip", "10.0.0.21")
-	ctx = lcontext.WithShipment(ctx, "flag", 3)
+	ctx, _ := scontext.NewTransitWithContext(appCtx)
+	ctx = scontext.WithShipment(ctx, "prepare", "Prepare context")
+	ctx = scontext.WithShipment(ctx, "lang", "en_GB")
+	ctx = scontext.WithShipment(ctx, "ip", "10.0.0.21")
+	ctx = scontext.WithShipment(ctx, "flag", 3)
 
 	// Send request
 	client := http.Client{

@@ -7,7 +7,7 @@ import (
 
 	"github.com/deixis/spine/bg"
 	"github.com/deixis/spine/config"
-	lcontext "github.com/deixis/spine/context"
+	scontext "github.com/deixis/spine/context"
 	"github.com/deixis/spine/log"
 	"github.com/deixis/spine/net"
 	"github.com/deixis/spine/net/pubsub"
@@ -72,7 +72,7 @@ func (ps *Inmem) Publish(
 
 	// Publish message
 	ps.load(ch) <- &message{
-		Transit: lcontext.TransitFromContext(ctx),
+		Transit: scontext.TransitFromContext(ctx),
 		Data:    data,
 	}
 	return nil
@@ -151,16 +151,16 @@ func (w *worker) Start() {
 
 					// Pick transit or create a new one, and attach it to context
 					if msg.Transit != nil {
-						ctx = lcontext.TransitWithContext(ctx, msg.Transit)
+						ctx = scontext.TransitWithContext(ctx, msg.Transit)
 					} else {
-						ctx, msg.Transit = lcontext.NewTransitWithContext(ctx)
+						ctx, msg.Transit = scontext.NewTransitWithContext(ctx)
 					}
 
 					// TODO: Create follow up transit
 
 					// Attach contextualised services
-					ctx = lcontext.WithTracer(ctx, tracing.FromContext(ctx))
-					ctx = lcontext.WithLogger(ctx, log.FromContext(ctx))
+					ctx = scontext.WithTracer(ctx, tracing.FromContext(ctx))
+					ctx = scontext.WithLogger(ctx, log.FromContext(ctx))
 
 					call(ctx, msg.Data)
 				}
@@ -174,6 +174,6 @@ func (w *worker) Stop() {
 }
 
 type message struct {
-	Transit lcontext.Transit
+	Transit scontext.Transit
 	Data    []byte
 }

@@ -6,13 +6,13 @@ import (
 	"os"
 	"time"
 
-	"github.com/pkg/errors"
 	"github.com/deixis/spine"
-	lcontext "github.com/deixis/spine/context"
+	scontext "github.com/deixis/spine/context"
 	"github.com/deixis/spine/example/grpc/server/demo"
 	"github.com/deixis/spine/log"
 	lgrpc "github.com/deixis/spine/net/grpc"
 	"github.com/deixis/spine/net/naming"
+	"github.com/pkg/errors"
 	"google.golang.org/grpc"
 )
 
@@ -60,9 +60,9 @@ func start() error {
 		// Prepare context
 		ctx := context.Background()
 		log.Trace(ctx, "prepare", "Prepare context")
-		ctx = lcontext.WithShipment(ctx, "lang", "en_GB")
-		ctx = lcontext.WithShipment(ctx, "ip", "10.0.0.21")
-		ctx = lcontext.WithShipment(ctx, "flag", 3)
+		ctx = scontext.WithShipment(ctx, "lang", "en_GB")
+		ctx = scontext.WithShipment(ctx, "ip", "10.0.0.21")
+		ctx = scontext.WithShipment(ctx, "flag", 3)
 
 		res, err := demoSvc.Hello(ctx, &demo.Request{Msg: "Ping"})
 		if err != nil {

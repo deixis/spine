@@ -7,12 +7,12 @@ import (
 	"strconv"
 	"time"
 
-	opentracing "github.com/opentracing/opentracing-go"
-	olog "github.com/opentracing/opentracing-go/log"
-	lcontext "github.com/deixis/spine/context"
+	scontext "github.com/deixis/spine/context"
 	"github.com/deixis/spine/log"
 	"github.com/deixis/spine/stats"
 	"github.com/deixis/spine/tracing"
+	opentracing "github.com/opentracing/opentracing-go"
+	olog "github.com/opentracing/opentracing-go/log"
 )
 
 // Middleware is a function called on the HTTP stack before an action
@@ -36,7 +36,7 @@ func buildMiddlewareChain(l []Middleware, e Endpoint) ServeFunc {
 // mwDebug adds useful debugging information to the response header
 func mwDebug(next ServeFunc) ServeFunc {
 	return func(ctx context.Context, w ResponseWriter, r *Request) {
-		tr := lcontext.TransitFromContext(ctx)
+		tr := scontext.TransitFromContext(ctx)
 		w.Header().Add("Request-Id", tr.UUID())
 		next(ctx, w, r)
 	}
