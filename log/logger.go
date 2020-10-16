@@ -100,17 +100,17 @@ type Context struct {
 }
 
 // Trace calls `Trace` on the context `Logger`
-func Trace(ctx context.Context, tag, msg string, fields ...Field) {
+func Trace(ctx contextutil.ValueContext, tag, msg string, fields ...Field) {
 	FromContext(ctx).Trace(tag, msg, fields...)
 }
 
 // Warn calls `Warning` on the context `Logger`
-func Warn(ctx context.Context, tag, msg string, fields ...Field) {
+func Warn(ctx contextutil.ValueContext, tag, msg string, fields ...Field) {
 	FromContext(ctx).Warning(tag, msg, fields...)
 }
 
 // Err calls `Error` on the context `Logger`
-func Err(ctx context.Context, tag, msg string, fields ...Field) {
+func Err(ctx contextutil.ValueContext, tag, msg string, fields ...Field) {
 	FromContext(ctx).Error(tag, msg, fields...)
 }
 
