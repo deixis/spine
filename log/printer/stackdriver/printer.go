@@ -8,6 +8,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"strings"
 	"sync"
 	"time"
 
@@ -15,6 +16,7 @@ import (
 	"github.com/deixis/spine/config"
 	"github.com/deixis/spine/log"
 	"github.com/pkg/errors"
+	"google.golang.org/api/option"
 	logpb "google.golang.org/genproto/googleapis/logging/v2"
 )
 
@@ -52,6 +54,47 @@ type Config struct {
 	// CommonLabels, then the entry's (key, value) overrides the one in
 	// CommonLabels.
 	CommonLabels map[string]string `toml:"common_labels"`
+	// Credentials allows to define authentication credentials from the config
+	// file instead of the GOOGLE_APPLICATION_CREDENTIALS environment variable.
+	Credentials ConfigCredentials `toml:"credentials"`
+}
+
+type ConfigCredentials struct {
+	Type                    string `json:"type" toml:"type"`
+	ProjectID               string `json:"project_id" toml:"project_id"`
+	PrivateKeyID            string `json:"private_key_id" toml:"private_key_id"`
+	PrivateKey              string `json:"private_key" toml:"private_key"`
+	ClientEmail             string `json:"client_email" toml:"client_email"`
+	ClientID                string `json:"client_id" toml:"client_id"`
+	AuthURI                 string `json:"auth_uri" toml:"auth_uri"`
+	TokenURI                string `json:"token_uri" toml:"token_uri"`
+	AuthProviderX509CertURL string `json:"auth_provider_x509_cert_url" toml:"auth_provider_x509_cert_url"`
+	ClientX509CertURL       string `json:"client_x509_cert_url" toml:"client_x509_cert_url"`
+}
+
+func (c *ConfigCredentials) marshalJSON() ([]byte, error) {
+	// Set default values
+	if c.Type == "" {
+		c.Type = "service_account"
+	}
+	if c.AuthURI == "" {
+		c.AuthURI = "https://accounts.google.com/o/oauth2/auth"
+	}
+	if c.TokenURI == "" {
+		c.TokenURI = "https://oauth2.googleapis.com/token"
+	}
+	if c.AuthProviderX509CertURL == "" {
+		c.AuthProviderX509CertURL = "https://www.googleapis.com/oauth2/v1/certs"
+	}
+
+	// Private keys loaded can be escape sometimes
+	c.PrivateKey = strings.ReplaceAll(c.PrivateKey, "\\n", "\n")
+
+	json, err := json.Marshal(c)
+	if err != nil {
+		return nil, errors.Wrap(err, "error marshalling Google credentials")
+	}
+	return json, nil
 }
 
 func New(tree config.Tree) (log.Printer, error) {
@@ -70,9 +113,24 @@ func New(tree config.Tree) (log.Printer, error) {
 		flushPeriod = time.Duration(c.FlushPeriod) * time.Second
 	}
 
+	var options []option.ClientOption
+
+	// Auth from config file
+	if c.Credentials.ProjectID != "" && c.Credentials.PrivateKey != "" {
+		creds, err := c.Credentials.marshalJSON()
+		if err != nil {
+			return nil, errors.Wrap(err, "error in \"credentials\" on stackdriver log printer config")
+		}
+		options = append(options, option.WithCredentialsJSON(creds))
+	}
+
 	// Create a Client
 	ctx := context.Background()
-	client, err := logging.NewClient(ctx, c.Parent)
+	client, err := logging.NewClient(
+		ctx,
+		c.Parent,
+		options...,
+	)
 	if err != nil {
 		return nil, errors.Wrap(err, "failing to initialise Stackdriver client")
 	}
