@@ -8,10 +8,12 @@ import (
 
 	"github.com/deixis/spine/config"
 	"github.com/deixis/spine/stats"
+	"github.com/deixis/spine/stats/adapter/prometheus"
 	"github.com/deixis/spine/stats/adapter/statsd"
 )
 
 func init() {
+	Register(prometheus.Name, prometheus.New)
 	Register(statsd.Name, statsd.New)
 }
 

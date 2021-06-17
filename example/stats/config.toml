@@ -1,0 +1,13 @@
+node = "$NODE_NAME"
+version = "test"
+
+[request]
+  timeout_ms = 2002
+
+# Stats
+[stats.prometheus]
+  addr = ""
+  port = "2112"
+
+[stats.prometheus.tags]
+  environment = "development"
