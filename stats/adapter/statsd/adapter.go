@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/deixis/spine/config"
+	"github.com/deixis/spine/log"
 	"github.com/deixis/spine/stats"
 )
 
@@ -27,6 +28,7 @@ func New(tree config.Tree) (stats.Stats, error) {
 	client := &Client{
 		config: conf,
 		tags:   conf.Client.Tags,
+		log:    log.NopLogger(),
 	}
 
 	// Create connection
@@ -49,6 +51,7 @@ type Client struct {
 	config *adapterConfig
 	muted  bool
 	tags   []tag
+	log    log.Logger
 }
 
 func (c *Client) Start() {}
@@ -83,12 +86,20 @@ func (c *Client) Histogram(key string, n interface{}, tags ...map[string]string)
 }
 
 func (c *Client) With(meta map[string]string) stats.Stats {
-	return &Client{
-		conn:   c.conn,
-		config: c.config,
-		muted:  c.muted,
-		tags:   c.mergeTags(meta),
-	}
+	clone := c.clone()
+	clone.tags = c.mergeTags(meta)
+	return clone
+}
+
+func (c *Client) Log(l log.Logger) stats.Stats {
+	clone := c.clone()
+	clone.log = l
+	return clone
+}
+
+func (c *Client) clone() *Client {
+	clone := *c
+	return &clone
 }
 
 func (c *Client) buildTags(l ...map[string]string) string {

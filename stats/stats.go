@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/deixis/spine/contextutil"
+	"github.com/deixis/spine/log"
 )
 
 // Stats is an interface for app statistics
@@ -30,6 +31,8 @@ type Stats interface {
 
 	// With returns a child Stats, and add meta to that Stats
 	With(meta map[string]string) Stats
+	// Log attaches a logger to a Stats instance
+	Log(l log.Logger) Stats
 }
 
 // Count calls `Count` on the context `Stats`
