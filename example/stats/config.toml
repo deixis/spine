@@ -6,6 +6,7 @@ version = "test"
 
 # Stats
 [stats.prometheus]
+  namespace = "spine"
   addr = ""
   port = "2112"
 
