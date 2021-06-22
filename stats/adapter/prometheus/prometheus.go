@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/deixis/spine/config"
+	"github.com/deixis/spine/log"
 	"github.com/deixis/spine/stats"
 	"github.com/pkg/errors"
 	"github.com/prometheus/client_golang/prometheus"
@@ -32,17 +33,22 @@ func New(tree config.Tree) (stats.Stats, error) {
 	}
 
 	return &Client{
-		reg:    prometheus.NewRegistry(),
-		Config: *config,
+		mux:        &sync.Mutex{},
+		gauges:     make(map[string]*prometheus.GaugeVec),
+		histograms: make(map[string]*prometheus.HistogramVec),
+		reg:        prometheus.NewRegistry(),
+		log:        log.NopLogger(),
+		Config:     *config,
 	}, nil
 }
 
 type Client struct {
+	mux        *sync.Mutex
 	http       http.Server
-	counters   sync.Map
-	gauges     sync.Map
-	histograms sync.Map
+	gauges     map[string]*prometheus.GaugeVec
+	histograms map[string]*prometheus.HistogramVec
 	reg        *prometheus.Registry
+	log        log.Logger
 
 	Config Config
 	Meta   map[string]string
@@ -54,6 +60,10 @@ func (c *Client) Start() {
 
 	c.http.Addr = strings.Join([]string{c.Config.Addr, c.Config.Port}, ":")
 	c.http.Handler = mux
+
+	c.log.Trace("stats.prometheus.http", "Starting Prometheus metrics server",
+		log.String("addr", c.http.Addr),
+	)
 
 	err := c.http.ListenAndServe()
 	if err == http.ErrServerClosed {
@@ -68,17 +78,42 @@ func (c *Client) Stop() {
 }
 
 func (c *Client) Count(key string, n interface{}, tags ...map[string]string) {
-	// TODO: Implement me
-	// op := c.loadCounter(key)
+	v, err := toFloat64(n)
+	if err != nil {
+		return
+	}
+
+	op, err := c.loadGauge(key, tags...)
+	if err != nil {
+		c.log.Warning("stats.prometheus.count.err", "Failed to load collector",
+			log.Error(err),
+		)
+		return
+	}
+	op.Add(v)
 }
 
 func (c *Client) Inc(key string, tags ...map[string]string) {
-	op := c.loadCounter(key, tags...)
+	// Using gauge instead of Counter because Prometheus uses monotonic counters (no decrement)
+	op, err := c.loadGauge(key, tags...)
+	if err != nil {
+		c.log.Warning("stats.prometheus.inc.err", "Failed to load collector",
+			log.Error(err),
+		)
+		return
+	}
 	op.Inc()
 }
 
 func (c *Client) Dec(key string, tags ...map[string]string) {
-	// TODO: Implement me
+	op, err := c.loadGauge(key, tags...)
+	if err != nil {
+		c.log.Warning("stats.prometheus.dec.err", "Failed to load collector",
+			log.Error(err),
+		)
+		return
+	}
+	op.Dec()
 }
 
 func (c *Client) Gauge(key string, n interface{}, tags ...map[string]string) {
@@ -88,12 +123,35 @@ func (c *Client) Gauge(key string, n interface{}, tags ...map[string]string) {
 		return
 	}
 
-	op := c.loadGauge(key, tags...)
+	op, err := c.loadGauge(key, tags...)
+	if err != nil {
+		c.log.Warning("stats.prometheus.gauge.err", "Failed to load collector",
+			log.Error(err),
+		)
+		return
+	}
 	op.Set(v)
 }
 
 func (c *Client) Timing(key string, t time.Duration, tags ...map[string]string) {
-	// TODO: Implement me
+	// https://pkg.go.dev/github.com/prometheus/client_golang/prometheus#Histogram
+	var tm map[string]string
+	if len(tags) > 0 {
+		tm = tags[0]
+	} else {
+		tm = make(map[string]string)
+	}
+
+	// Store unit
+	tm["unit"] = "ms"
+	op, err := c.loadHistogram(key, tm)
+	if err != nil {
+		c.log.Warning("stats.prometheus.timing.err", "Failed to load collector",
+			log.Error(err),
+		)
+		return
+	}
+	op.Observe(float64(t / time.Millisecond))
 }
 
 func (c *Client) Histogram(key string, n interface{}, tags ...map[string]string) {
@@ -103,141 +161,128 @@ func (c *Client) Histogram(key string, n interface{}, tags ...map[string]string)
 		return
 	}
 
-	op := c.loadHistogram(key, tags...)
+	op, err := c.loadHistogram(key, tags...)
+	if err != nil {
+		c.log.Warning("stats.prometheus.histogram.err", "Failed to load collector",
+			log.Error(err),
+		)
+		return
+	}
 	op.Observe(v)
 }
 
 func (c *Client) With(meta map[string]string) stats.Stats {
-	return &Client{
-		http:     c.http,
-		reg:      c.reg,
-		counters: c.counters,
-		Config:   c.Config,
-		Meta:     meta,
-	}
+	clone := c.clone()
+	clone.Meta = meta
+	return clone
 }
 
-func (c *Client) loadCounter(key string, tags ...map[string]string) prometheus.Counter {
-	id := buildID(key, tags...)
-
-	v, ok := c.counters.Load(id)
-	if !ok {
-		// Build collector with or without labels
-		var coll prometheus.Collector
-		if len(tags) > 0 {
-			coll = prometheus.NewCounterVec(
-				prometheus.CounterOpts{
-					Namespace: c.Config.Namespace,
-					Name:      sanitiseName(key),
-				},
-				labels(tags[0]),
-			)
-		} else {
-			coll = prometheus.NewCounter(
-				prometheus.CounterOpts{
-					Namespace: c.Config.Namespace,
-					Name:      sanitiseName(key),
-				},
-			)
-		}
-
-		// Register it
-		if err := c.reg.Register(coll); err != nil {
-			panic(err)
-		}
-
-		// Cache it
-		c.counters.Store(id, coll)
-
-		v = coll
-	}
-
-	if len(tags) > 0 {
-		return v.(*prometheus.CounterVec).With(tags[0])
-	}
-	return v.(prometheus.Counter)
+func (c *Client) Log(l log.Logger) stats.Stats {
+	clone := c.clone()
+	clone.log = l
+	return clone
 }
 
-func (c *Client) loadGauge(key string, tags ...map[string]string) prometheus.Gauge {
-	id := buildID(key, tags...)
-
-	v, ok := c.gauges.Load(id)
-	if !ok {
-		// Build collector with or without labels
-		var coll prometheus.Collector
-		if len(tags) > 0 {
-			coll = prometheus.NewGaugeVec(
-				prometheus.GaugeOpts{
-					Namespace: c.Config.Namespace,
-					Name:      sanitiseName(key),
-				},
-				labels(tags[0]),
-			)
-		} else {
-			coll = prometheus.NewGauge(
-				prometheus.GaugeOpts{
-					Namespace: c.Config.Namespace,
-					Name:      sanitiseName(key),
-				},
-			)
-		}
-
-		// Register it
-		if err := c.reg.Register(coll); err != nil {
-			panic(err)
-		}
-
-		// Cache it
-		c.gauges.Store(id, coll)
-
-		v = coll
-	}
-
-	if len(tags) > 0 {
-		return v.(*prometheus.GaugeVec).With(tags[0])
-	}
-	return v.(prometheus.Gauge)
+// clone returns a shallow clone of c
+func (c *Client) clone() *Client {
+	clone := *c
+	return &clone
 }
 
-func (c *Client) loadHistogram(key string, tags ...map[string]string) prometheus.Observer {
+func (c *Client) loadGauge(key string, tags ...map[string]string) (prometheus.Gauge, error) {
+	c.mux.Lock()
+	defer c.mux.Unlock()
+
+	// TODO: Use hash
+	// TODO: Use LRU cache (register/unregister metrics when evicted)
 	id := buildID(key, tags...)
-
-	v, ok := c.histograms.Load(id)
-	if !ok {
-		// Build collector with or without labels
-		var coll prometheus.Collector
+	if v, ok := c.gauges[id]; ok {
 		if len(tags) > 0 {
-			coll = prometheus.NewHistogramVec(
-				prometheus.HistogramOpts{
-					Namespace: c.Config.Namespace,
-					Name:      sanitiseName(key),
-				},
-				labels(tags[0]),
-			)
-		} else {
-			coll = prometheus.NewHistogram(
-				prometheus.HistogramOpts{
-					Namespace: c.Config.Namespace,
-					Name:      sanitiseName(key),
-				},
-			)
+			return v.With(tags[0]), nil
 		}
-
-		// Register it
-		if err := c.reg.Register(coll); err != nil {
-			panic(err)
-		}
-
-		// Cache it
-		c.histograms.Store(id, coll)
-
-		v = coll
+		return v.With(nil), nil
 	}
+
+	// Build collector with or without labels
+	var coll *prometheus.GaugeVec
+	if len(tags) > 0 {
+		coll = prometheus.NewGaugeVec(
+			prometheus.GaugeOpts{
+				Namespace: c.Config.Namespace,
+				Name:      sanitiseName(key),
+			},
+			labels(tags[0]),
+		)
+	} else {
+		coll = prometheus.NewGaugeVec(
+			prometheus.GaugeOpts{
+				Namespace: c.Config.Namespace,
+				Name:      sanitiseName(key),
+			},
+			nil,
+		)
+	}
+
+	// Register it
+	if err := c.reg.Register(uncheckedCollector{coll}); err != nil {
+		return nil, err
+	}
+
+	// Cache it
+	c.gauges[id] = coll
 
 	if len(tags) > 0 {
-		return v.(*prometheus.HistogramVec).With(tags[0])
+		return coll.With(tags[0]), nil
 	}
-	return v.(prometheus.Histogram)
+	return coll.With(nil), nil
+}
+
+func (c *Client) loadHistogram(key string, tags ...map[string]string) (prometheus.Observer, error) {
+	c.mux.Lock()
+	defer c.mux.Unlock()
+
+	// TODO: Use hash
+	// TODO: Use LRU cache (register/unregister metrics when evicted)
+	id := buildID(key, tags...)
+	if v, ok := c.histograms[id]; ok {
+		if len(tags) > 0 {
+			return v.With(tags[0]), nil
+		}
+		return v.With(nil), nil
+	}
+
+	// Build collector with or without labels
+	var coll *prometheus.HistogramVec
+	if len(tags) > 0 {
+		coll = prometheus.NewHistogramVec(
+			prometheus.HistogramOpts{
+				Namespace: c.Config.Namespace,
+				Name:      sanitiseName(key),
+			},
+			labels(tags[0]),
+		)
+	} else {
+		coll = prometheus.NewHistogramVec(
+			prometheus.HistogramOpts{
+				Namespace: c.Config.Namespace,
+				Name:      sanitiseName(key),
+			},
+			nil,
+		)
+	}
+
+	// Register it
+	if err := c.reg.Register(uncheckedCollector{coll}); err != nil {
+		return nil, err
+	}
+
+	// Cache it
+	c.histograms[id] = coll
+
+	if len(tags) > 0 {
+		return coll.With(tags[0]), nil
+	}
+	return coll.With(nil), nil
 }
 
 func buildID(key string, tags ...map[string]string) string {
@@ -286,4 +331,15 @@ func toFloat64(n interface{}) (float64, error) {
 		return math.NaN(), errors.New("failed to convert value to float64")
 	}
 	return v, nil
+}
+
+// uncheckedCollector wraps a Collector but its Describe method yields no Desc.
+// This allows incoming metrics to have inconsistent label sets
+type uncheckedCollector struct {
+	c prometheus.Collector
+}
+
+func (u uncheckedCollector) Describe(_ chan<- *prometheus.Desc) {}
+func (u uncheckedCollector) Collect(c chan<- prometheus.Metric) {
+	u.c.Collect(c)
 }

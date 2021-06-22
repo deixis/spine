@@ -12,8 +12,6 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/opentracing/opentracing-go"
-	"github.com/pkg/errors"
 	"github.com/deixis/spine/bg"
 	"github.com/deixis/spine/cache"
 	acache "github.com/deixis/spine/cache/adapter"
@@ -33,6 +31,8 @@ import (
 	astats "github.com/deixis/spine/stats/adapter"
 	"github.com/deixis/spine/tracing"
 	atracing "github.com/deixis/spine/tracing/adapter"
+	"github.com/opentracing/opentracing-go"
+	"github.com/pkg/errors"
 )
 
 const (
@@ -145,6 +145,7 @@ func NewWithConfig(
 			"node":    a.config.Node,
 			"version": a.config.Version,
 		})
+		a.stats = a.stats.Log(a.log)
 		a.ctx = stats.WithContext(a.ctx, a.stats)
 	default:
 		return nil, errors.Wrap(err, "error initialising stats")
