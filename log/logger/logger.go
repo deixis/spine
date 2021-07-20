@@ -8,31 +8,59 @@ import (
 	"github.com/deixis/spine/config"
 	"github.com/deixis/spine/log"
 	"github.com/deixis/spine/log/formatter"
+	"github.com/deixis/spine/log/formatter/logf"
 	"github.com/deixis/spine/log/printer"
+	"github.com/deixis/spine/log/printer/stdout"
+	"github.com/pkg/errors"
 )
 
 // New creates a new logger
 func New(service string, config config.Tree) (log.Logger, error) {
 	lc := &Config{}
-	config.Unmarshal(lc)
+	if err := config.Unmarshal(lc); err != nil {
+		return nil, errors.Wrap(err, "failed to unmarshal logger config")
+	}
 
 	f, err := formatter.New(config.Get("formatter"))
 	if err != nil {
 		return nil, err
 	}
-
 	p, err := printer.New(config.Get("printer"))
 	if err != nil {
 		return nil, err
 	}
+	return Build(service, log.ParseLevel(lc.Level), f, p), nil
+}
 
+// StdOut creates a new logger that outputs logs in stdout
+//
+// This function is useful when logger is being used in standalone mode
+func StdOut(service string, level log.Level) (log.Logger, error) {
+	f, err := logf.New(config.NopTree())
+	if err != nil {
+		return nil, err
+	}
+	p, err := stdout.New(config.NopTree())
+	if err != nil {
+		return nil, err
+	}
+	return Build(service, level, f, p), nil
+}
+
+// Build builds a logger from the given formatter and printer
+func Build(
+	service string,
+	level log.Level,
+	f log.Formatter,
+	p log.Printer,
+) log.Logger {
 	return &Logger{
 		service:   service,
-		level:     log.ParseLevel(lc.Level),
+		level:     level,
 		fmt:       f,
 		pnt:       p,
 		calldepth: 1,
-	}, nil
+	}
 }
 
 // Logger is the key struct of the log package.
