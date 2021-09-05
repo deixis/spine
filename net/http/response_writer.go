@@ -123,6 +123,9 @@ func (r *responseWriter) Header() http.Header {
 }
 
 func (r *responseWriter) Write(b []byte) (int, error) {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+
 	return r.http.Write(b)
 }
 
