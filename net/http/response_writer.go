@@ -130,13 +130,15 @@ func (r *responseWriter) Write(b []byte) (int, error) {
 }
 
 func (r *responseWriter) WriteHeader(c int) {
+	defer recover() // Prevent concurrent writes to header to panic
+	defer r.mu.Unlock()
+
 	r.mu.Lock()
 	if !r.codeWritten {
 		r.code = c
 		r.codeWritten = true
 		r.http.WriteHeader(c)
 	}
-	r.mu.Unlock()
 }
 
 func (r *responseWriter) Code() int {
