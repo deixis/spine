@@ -22,8 +22,8 @@ type RenderJSON struct {
 
 func (r *RenderJSON) Render(res ResponseWriter) error {
 	// Header
-	res.Header().Add("Content-Type", "application/json; charset=utf-8")
 	res.WriteHeader(r.Code)
+	res.Header().Add("Content-Type", "application/json; charset=utf-8")
 
 	// Body
 	if err := json.NewEncoder(res).Encode(r.V); err != nil {
@@ -40,8 +40,8 @@ type RenderGob struct {
 
 func (r *RenderGob) Render(res ResponseWriter) error {
 	// Header
-	res.Header().Add("Content-Type", "application/octet-stream")
 	res.WriteHeader(r.Code)
+	res.Header().Add("Content-Type", "application/octet-stream")
 
 	// Body
 	if err := gob.NewEncoder(res).Encode(r.V); err != nil {
