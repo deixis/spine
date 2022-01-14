@@ -8,6 +8,7 @@ import (
 
 	"github.com/deixis/spine/config"
 	"github.com/deixis/spine/tracing"
+	"github.com/deixis/spine/tracing/adapter/datadog"
 	"github.com/deixis/spine/tracing/adapter/jaeger"
 )
 
@@ -22,6 +23,7 @@ var (
 func init() {
 	// Register default adapters
 	Register(jaeger.Name, jaeger.New)
+	Register(datadog.Name, datadog.New)
 }
 
 // Adapters returns the list of registered adapters
