@@ -65,7 +65,12 @@ func (l *logger) With(fields ...log.Field) log.Logger {
 }
 
 func (l *logger) AddCalldepth(n int) log.Logger {
-	return l.Log.AddCalldepth(n)
+	return &logger{
+		Leg:  l.Leg,
+		S:    l.S,
+		Span: l.Span,
+		Log:  l.Log.AddCalldepth(n),
+	}
 }
 
 func (l *logger) Close() error {
