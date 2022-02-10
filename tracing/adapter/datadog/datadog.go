@@ -78,6 +78,5 @@ type Logger struct {
 
 // Log prints the given message.
 func (l *Logger) Log(msg string) {
-	// Log it as a warning in case Datadog takes the error level lightly
-	l.L.Warning("tracing.datadog.err", msg)
+	l.L.Trace("tracing.datadog", msg)
 }
