@@ -9,7 +9,6 @@ import (
 	"github.com/deixis/spine/config"
 	"github.com/deixis/spine/net/pubsub"
 	"github.com/deixis/spine/net/pubsub/adapter/inmem"
-	"github.com/deixis/spine/net/pubsub/adapter/nats"
 )
 
 // Adapter returns a new agent initialised with the given config
@@ -23,7 +22,6 @@ var (
 func init() {
 	// Register default adapters
 	Register(inmem.Name, inmem.New)
-	Register(nats.Name, nats.New)
 }
 
 // Adapters returns the list of registered adapters
