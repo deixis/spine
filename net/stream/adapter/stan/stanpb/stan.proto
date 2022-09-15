@@ -1,7 +1,0 @@
-syntax = "proto3";
-package stanpb;
-
-message Message {
-  bytes payload = 1;
-  bytes transit = 2;
-}
