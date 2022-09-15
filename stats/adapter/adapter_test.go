@@ -8,7 +8,7 @@ import (
 
 // TestDefaultAdapters tests whether the default adapters are registered
 func TestDefaultAdapters(t *testing.T) {
-	expected := []string{"statsd"}
+	expected := []string{"prometheus", "statsd"}
 
 	l := adapter.Adapters()
 	if len(l) != len(expected) {
