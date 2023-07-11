@@ -58,6 +58,10 @@ func newConn(conf connConfig) (*conn, error) {
 		// TODO: Use structured log format
 		fmt.Printf("[statsd] failed to dial connection to <%s>: %s\n", c.addr, err)
 
+		if writer != nil {
+			writer.Close()
+		}
+
 		// Periodically attempt to connect in background
 		go func() {
 			for {
