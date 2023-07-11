@@ -60,6 +60,7 @@ func newConn(conf connConfig) (*conn, error) {
 
 		if writer != nil {
 			writer.Close()
+			writer = nil
 		}
 
 		// Periodically attempt to connect in background
@@ -94,7 +95,9 @@ func newConn(conf connConfig) (*conn, error) {
 	}
 
 	// Replace writer
-	c.w = writer
+	if writer != nil {
+		c.w = writer
+	}
 
 	// To prevent a buffer overflow add some capacity to the buffer to allow for
 	// an additional metric.
