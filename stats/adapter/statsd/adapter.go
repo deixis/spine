@@ -170,6 +170,10 @@ func extractConfig(c *Config) *adapterConfig {
 	// Address
 	conf.Conn.Addr = fmt.Sprintf("%s:%s", c.Addr, c.Port)
 
+	if c.Protocol != "" {
+		conf.Conn.Network = c.Protocol
+	}
+
 	// Tags format
 	if c.TagsFormat != "" {
 		conf.Conn.TagFormat = tagsFormats[c.TagsFormat]

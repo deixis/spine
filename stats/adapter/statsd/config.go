@@ -24,6 +24,7 @@ type tag struct {
 type Config struct {
 	Addr       string            `toml:"addr"`
 	Port       string            `toml:"port"`
+	Protocol   string            `toml:"protocol"`
 	TagsFormat string            `toml:"tags_format"`
 	Tags       map[string]string `toml:"tags"`
 }
