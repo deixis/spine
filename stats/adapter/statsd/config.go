@@ -34,7 +34,6 @@ type adapterConfig struct {
 }
 
 type clientConfig struct {
-	Muted  bool
 	Rate   float32
 	Prefix string
 	Tags   []tag

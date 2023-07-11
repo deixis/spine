@@ -32,7 +32,7 @@ func New(tree config.Tree) (stats.Stats, error) {
 	}
 
 	// Create connection
-	conn, err := newConn(conf.Conn, conf.Client.Muted)
+	conn, err := newConn(conf.Conn)
 	if err != nil {
 		return nil, err
 	}
@@ -44,7 +44,6 @@ func New(tree config.Tree) (stats.Stats, error) {
 type Client struct {
 	conn   *conn
 	config *adapterConfig
-	muted  bool
 	tags   []tag
 	log    log.Logger
 }
@@ -123,9 +122,6 @@ func (c *Client) mergeTags(l ...map[string]string) []tag {
 // close flushes the Client's buffer and releases the associated ressources. The
 // Client and all the cloned Clients must not be used afterward.
 func (c *Client) close() {
-	if c.muted {
-		return
-	}
 	c.conn.mu.Lock()
 	c.conn.flush(0)
 	c.conn.handleError(c.conn.w.Close())

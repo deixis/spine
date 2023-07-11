@@ -29,7 +29,7 @@ type conn struct {
 	rateCache map[float32]string
 }
 
-func newConn(conf connConfig, muted bool) (*conn, error) {
+func newConn(conf connConfig) (*conn, error) {
 	c := &conn{
 		addr:          conf.Addr,
 		errorHandler:  conf.ErrorHandler,
@@ -39,10 +39,6 @@ func newConn(conf connConfig, muted bool) (*conn, error) {
 		tagFormat:     conf.TagFormat,
 		// Discard writes until the connection is successfuly established
 		w: &nopWriter{io.Discard},
-	}
-
-	if muted {
-		return c, nil
 	}
 
 	// Connection check to fail as early as possible
