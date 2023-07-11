@@ -1,6 +1,7 @@
 package statsd
 
 import (
+	"fmt"
 	"io"
 	"math/rand"
 	"net"
@@ -36,29 +37,64 @@ func newConn(conf connConfig, muted bool) (*conn, error) {
 		maxPacketSize: conf.MaxPacketSize,
 		network:       conf.Network,
 		tagFormat:     conf.TagFormat,
+		// Discard writes until the connection is successfuly established
+		w: &nopWriter{io.Discard},
 	}
 
 	if muted {
 		return c, nil
 	}
 
-	var err error
-	c.w, err = dialTimeout(c.network, c.addr, 5*time.Second)
-	if err != nil {
-		return c, err
-	}
-	// When using UDP do a quick check to see if something is listening on the
-	// given port to return an error as soon as possible.
+	// Connection check to fail as early as possible
+	var checkConn = noopCheck
 	if c.network[:3] == "udp" {
-		for i := 0; i < 2; i++ {
-			_, err = c.w.Write(nil)
-			if err != nil {
-				_ = c.w.Close()
-				c.w = nil
-				return c, err
-			}
-		}
+		checkConn = checkUDP
 	}
+
+	// First attempt to connect synchronously to ensure we have a chance to
+	// forward the first metrics received
+	// Connect to statsd server
+	writer, err := dialTimeout(c.network, c.addr, 5*time.Second)
+	if err == nil {
+		err = checkConn(writer)
+	}
+	if err != nil {
+		// TODO: Use structured log format
+		fmt.Printf("[statsd] failed to dial connection to <%s>: %s\n", c.addr, err)
+
+		// Periodically attempt to connect in background
+		go func() {
+			for {
+				// TODO: Use exponential backoff instead
+				time.Sleep(10 * time.Second)
+
+				fmt.Println("[statsd] Dialing...")
+
+				// Connect to statsd server
+				writer, err := dialTimeout(c.network, c.addr, 5*time.Second)
+				if err != nil {
+					fmt.Printf("[statsd] failed to dial connection to <%s>: %s\n", c.addr, err)
+
+					continue
+				}
+
+				if err := checkConn(writer); err != nil {
+					fmt.Printf("[statsd] connection check failed: %s\n", err)
+					writer.Close()
+
+					continue
+				}
+
+				// Replace writer
+				c.w = writer
+
+				return
+			}
+		}()
+	}
+
+	// Replace writer
+	c.w = writer
 
 	// To prevent a buffer overflow add some capacity to the buffer to allow for
 	// an additional metric.
@@ -265,9 +301,36 @@ func (c *conn) handleError(err error) {
 	}
 }
 
+var noopCheck = func(w io.Writer) error { return nil }
+
+func checkUDP(w io.Writer) error {
+	// When using UDP do a quick check to see if something is listening on the
+	// given port to return an error as soon as possible.
+	for i := 0; i < 2; i++ {
+		_, err := w.Write(nil)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
 // Stubbed out for testing.
 var (
 	dialTimeout = net.DialTimeout
 	now         = time.Now
 	randFloat   = rand.Float32
 )
+
+type nopWriter struct {
+	w io.Writer
+}
+
+func (n *nopWriter) Write(b []byte) (int, error) {
+	return n.w.Write(b)
+}
+
+func (n *nopWriter) Close() error {
+	return nil
+}

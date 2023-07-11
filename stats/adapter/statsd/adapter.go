@@ -34,11 +34,6 @@ func New(tree config.Tree) (stats.Stats, error) {
 	// Create connection
 	conn, err := newConn(conf.Conn, conf.Client.Muted)
 	if err != nil {
-		client.muted = true
-
-		// If nothing is listening on the target port, an error is returned and
-		// the returned client does nothing but is still usable. So we can
-		// just log the error and go on.
 		return nil, err
 	}
 	client.conn = conn
