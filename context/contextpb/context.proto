@@ -1,6 +1,8 @@
 syntax = "proto3";
 package contextpb;
 
+option go_package = "context/contextpb";
+
 message Context {
   string ID = 1;
   string Stepper = 2;

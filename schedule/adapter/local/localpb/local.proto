@@ -1,6 +1,8 @@
 syntax = "proto3";
 package local;
 
+option go_package = "schedule/adapter/local/localpb";
+
 // A Partition stores event keys within a specific time range
 message Partition {
   int64 from = 1;

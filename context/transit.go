@@ -6,9 +6,9 @@ import (
 	"encoding"
 
 	"github.com/deixis/spine/context/contextpb"
-	"github.com/golang/protobuf/proto"
 	"github.com/google/uuid"
 	"github.com/pkg/errors"
+	"google.golang.org/protobuf/proto"
 )
 
 // TransitFactory creates empty Transit instances
