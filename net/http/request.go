@@ -20,3 +20,15 @@ type Request struct {
 func (r *Request) Parse(ctx context.Context, v interface{}) error {
 	return pickParser(ctx, r).Parse(v)
 }
+
+// Path returns the matched HTTP endpoint path
+// e.g. /users/{id} and not /users/123
+func (r *Request) Path() string {
+	return r.path
+}
+
+// Method returns the matched HTTP endpoint method
+// e.g. GET, POST, PUT, DELETE
+func (r *Request) Method() string {
+	return r.method
+}
