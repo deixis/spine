@@ -1,6 +1,6 @@
 module github.com/deixis/spine
 
-go 1.18
+go 1.21
 
 require (
 	cloud.google.com/go/logging v1.8.1
