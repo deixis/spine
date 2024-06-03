@@ -3,33 +3,15 @@ package bg
 import (
 	"context"
 
-	"github.com/deixis/spine/cache"
-	"github.com/deixis/spine/config"
 	scontext "github.com/deixis/spine/context"
-	"github.com/deixis/spine/disco"
-	"github.com/deixis/spine/log"
-	"github.com/deixis/spine/schedule"
-	"github.com/deixis/spine/stats"
-	"github.com/deixis/spine/tracing"
 )
 
 func BG(parent context.Context, f func(ctx context.Context)) error {
 	tr := scontext.TransitFromContext(parent)
 
 	return RegFromContext(parent).Dispatch(NewTask(func() {
-		// TODO: Reference context to parent (Follows ref)
-		ctx, cancel := context.WithCancel(context.Background())
+		ctx, cancel := context.WithCancel(context.WithoutCancel(parent))
 		defer cancel()
-
-		// Attach app context services to request context
-		ctx = config.TreeWithContext(ctx, config.TreeFromContext(parent))
-		ctx = log.WithContext(ctx, log.FromContext(parent))
-		ctx = stats.WithContext(ctx, stats.FromContext(parent))
-		ctx = RegWithContext(ctx, RegFromContext(parent))
-		ctx = tracing.WithContext(ctx, tracing.FromContext(parent))
-		ctx = disco.AgentWithContext(ctx, disco.AgentFromContext(parent))
-		ctx = schedule.SchedulerWithContext(ctx, schedule.SchedulerFromContext(parent))
-		ctx = cache.WithContext(ctx, cache.FromContext(parent))
 
 		if tr != nil {
 			ctx = scontext.TransitWithContext(ctx, tr)
