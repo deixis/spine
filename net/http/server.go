@@ -168,7 +168,6 @@ func (s *Server) isState(state uint32) bool {
 
 func (s *Server) buildHandleFunc(rootctx context.Context, e Endpoint) func(
 	w http.ResponseWriter, r *http.Request) {
-
 	serve := buildMiddlewareChain(s.middlewares, e)
 
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -177,7 +176,7 @@ func (s *Server) buildHandleFunc(rootctx context.Context, e Endpoint) func(
 		defer s.wg.Done()
 
 		// Wrap net/http parameters
-		res := &responseWriter{http: w}
+		res := WrapResponseWriter(w)
 		req := &Request{
 			startTime: time.Now(),
 			method:    e.Method(),

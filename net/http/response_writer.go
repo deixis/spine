@@ -110,6 +110,11 @@ type ResponseWriter interface {
 	) error
 }
 
+// WrapResponseWriter wraps an http.ResponseWriter into a ResponseWriter
+func WrapResponseWriter(w http.ResponseWriter) ResponseWriter {
+	return &responseWriter{http: w}
+}
+
 // responseWriter is the implementation of ResponseWriter
 type responseWriter struct {
 	mu          sync.RWMutex
