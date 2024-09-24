@@ -115,10 +115,6 @@ func (s *Server) Serve(ctx context.Context, addr string) error {
 	s.config = &cfg
 
 	s.Append((&mwPanic{Panic: cfg.Request.Panic}).M)
-	// FIXME: Request cancellation can cause panics when there is a race
-	// condition in ResponseWriter. We must have a thread-safe ResponseWriter
-	// here before we can reenable this middleware.
-	// s.Append((&mwInterrupt{Panic: cfg.Request.Panic}).M)
 
 	r := mux.NewRouter()
 	for _, e := range s.endpoints {
