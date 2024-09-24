@@ -140,8 +140,9 @@ func (s *Server) Serve(ctx context.Context, addr string) error {
 	var err error
 	if tlsEnabled {
 		err = s.http.ListenAndServeTLS(s.certFile, s.keyFile)
+	} else {
+		err = s.http.ListenAndServe()
 	}
-	err = s.http.ListenAndServe()
 	atomic.StoreUint32(&s.state, net.StateDown)
 
 	if err == http.ErrServerClosed {
