@@ -8,6 +8,10 @@ import (
 	"time"
 )
 
+const (
+	contentTypeHeader = "Content-Type"
+)
+
 // Renderer is a response returned by an action
 type Renderer interface {
 	// Render writes a response to the response writer
@@ -22,8 +26,8 @@ type RenderJSON struct {
 
 func (r *RenderJSON) Render(res ResponseWriter) error {
 	// Header
+	res.Header().Add(contentTypeHeader, "application/json; charset=utf-8")
 	res.WriteHeader(r.Code)
-	res.Header().Add("Content-Type", "application/json; charset=utf-8")
 
 	// Body
 	if err := json.NewEncoder(res).Encode(r.V); err != nil {
@@ -40,8 +44,8 @@ type RenderGob struct {
 
 func (r *RenderGob) Render(res ResponseWriter) error {
 	// Header
+	res.Header().Add(contentTypeHeader, "application/octet-stream")
 	res.WriteHeader(r.Code)
-	res.Header().Add("Content-Type", "application/octet-stream")
 
 	// Body
 	if err := gob.NewEncoder(res).Encode(r.V); err != nil {
