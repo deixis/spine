@@ -152,7 +152,7 @@ func (l *Logger) log(lvl log.Level, tag, msg string, fields ...log.Field) {
 		Line:      int64(line),
 	}
 
-	f, err := l.fmt.Format(&ctx, tag, msg, fields...)
+	f, err := l.fmt.Format(&ctx, tag, msg, append(l.fields, fields...)...)
 	if err != nil {
 		f = fmt.Sprintf("log formatter error <%s>", err)
 	}
